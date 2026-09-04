@@ -30,8 +30,8 @@
 
 html, body {
   min-height: 100%;
-  background-color: var(--color-bg-base);
-  color: #f8fafc;
+  background-color: #030712 !important;
+  color: #f8fafc !important;
   font-family: var(--font-sans);
   overflow-x: hidden;
   line-height: 1.5;

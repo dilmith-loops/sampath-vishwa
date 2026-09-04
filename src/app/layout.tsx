@@ -28,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning style={{ backgroundColor: '#030712', color: '#f8fafc' }}>
+      <body suppressHydrationWarning style={{ backgroundColor: '#030712', color: '#f8fafc', margin: 0, minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
         <div className="bg-ambient-lights" aria-hidden="true">
           <div className="ambient-orb-1" />
           <div className="ambient-orb-2" />

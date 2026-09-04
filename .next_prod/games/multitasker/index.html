@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sampath Vishwa - Hands-Free Steering</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --sampath-orange: #f37021;
+            --sampath-orange-glow: rgba(243, 112, 33, 0.4);
+            --deep-navy: #050b18;
+            --gold: #d4af37;
+            --success: #00ff88;
+            --decline: #ff4d4d;
+            --border-glass: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #030712; color: white;
+            font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        #app-container {
+            position: relative;
+            width: 100%; height: 100%;
+            max-width: 100vw; max-height: 100vh;
+            background: var(--deep-navy);
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        video { display: none; }
+        canvas {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .ui-layer {
+            position: absolute; inset: 0; pointer-events: none; z-index: 10;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 10px 12px; box-sizing: border-box;
+        }
+
+        @media (min-width: 540px) {
+            .ui-layer { padding: 20px 24px; }
+        }
+
+        .portals {
+            width: 100%; display: flex; justify-content: space-between;
+            padding: 0 20px 20px 20px; box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .portal {
+            width: 120px; height: 120px; border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.25);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(10, 20, 42, 0.6); backdrop-filter: blur(10px);
+            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s;
+        }
+
+        .portal.decline { border-color: var(--decline); color: var(--decline); }
+        .portal.approve { border-color: var(--success); color: var(--success); }
+        
+        .active-portal {
+            transform: scale(1.18);
+            box-shadow: 0 0 35px currentColor;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .overlay-screen {
+            position: absolute; inset: 0; background: rgba(3, 7, 18, 0.95);
+            z-index: 100; display: flex; flex-direction: column;
+            align-items: center; text-align: center; padding: 16px 18px;
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            overflow-y: auto; overflow-x: hidden; box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .overlay-screen > *:first-child { margin-top: auto; }
+        .overlay-screen > *:last-child { margin-bottom: auto; }
+
+        .overlay-screen.hidden { display: none !important; }
+
+        .game-logo-large {
+            max-width: 140px; height: auto; margin-bottom: 8px;
+            filter: drop-shadow(0 8px 20px rgba(243, 112, 33, 0.3));
+        }
+
+        .badge-kiosk {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(243, 112, 33, 0.15); border: 1px solid rgba(243, 112, 33, 0.4);
+            color: #ff9800; padding: 4px 12px; border-radius: 20px;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.8px;
+            text-transform: uppercase; margin-bottom: 8px;
+        }
+
+        .screen-title {
+            font-family: 'Outfit', sans-serif; font-size: clamp(1.6rem, 5vw, 2.1rem); font-weight: 900;
+            color: #ffffff; margin: 0 0 6px 0; letter-spacing: -0.5px; line-height: 1.1;
+        }
+        .screen-title span { color: var(--sampath-orange); }
+
+        .screen-desc {
+            font-size: clamp(0.82rem, 2.5vw, 0.92rem); opacity: 0.85; max-width: 360px; line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .action-guide {
+            display: flex; gap: 12px; margin-bottom: 14px;
+        }
+        .action-card {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-glass);
+            border-radius: 12px; padding: 8px 14px; text-align: center;
+        }
+        .action-card b { display: block; font-size: 0.85rem; margin-top: 3px; }
+
+        .btn-start {
+            background: linear-gradient(135deg, #f37021 0%, #ff8c42 100%);
+            color: white; border: none; padding: 13px 38px; font-size: 1.05rem;
+            font-weight: 800; font-family: 'Outfit', sans-serif;
+            border-radius: 50px; cursor: pointer;
+            box-shadow: 0 10px 30px var(--sampath-orange-glow);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-start:hover { transform: translateY(-2px) scale(1.03); }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <video id="input_video" autoplay playsinline muted></video>
+        <canvas id="output_canvas"></canvas>
+
+        <div class="ui-layer">
+
+            <div class="portals">
+                <div id="p-left" class="portal decline">
+                    <span style="font-size: 2.2rem; line-height: 1;">✕</span>
+                    <span style="font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; margin-top: 4px;">SKIP</span>
+                </div>
+                <div id="p-right" class="portal approve">
+                    <span style="font-size: 2.2rem; line-height: 1;">✔</span>
+                    <span style="font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; margin-top: 4px;">APPROVE</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="startScreen" class="overlay-screen">
+            <img src="../../brand/vishwa-logo.png" alt="Sampath Vishwa" class="game-logo-large">
+            <div class="badge-kiosk">👤 Face & Head Angle Tracking</div>
+            <h1 class="screen-title">The Multitasker’s <span>Masterpiece</span></h1>
+            <p class="screen-desc">
+                Banking so seamless you can do it hands-free! Tilt your head left or right to steer falling banking tasks into portals.
+            </p>
+
+            <div class="action-guide">
+                <div class="action-card" style="border-color: rgba(255, 77, 77, 0.4);">
+                    <div style="font-size: 1.4rem;">↶ Tilt Left</div>
+                    <b style="color: var(--decline);">SKIP / DECLINE</b>
+                </div>
+                <div class="action-card" style="border-color: rgba(0, 255, 136, 0.4);">
+                    <div style="font-size: 1.4rem;">Tilt Right ↷</div>
+                    <b style="color: var(--success);">VISHWA APPROVE</b>
+                </div>
+            </div>
+
+            <button class="btn-start" onclick="startGame()">START GAME</button>
+        </div>
+
+        <div id="gameOverScreen" class="overlay-screen hidden">
+            <img src="../../brand/sampath-punkalasa.png" alt="Sampath Vishwa" style="width: 50px; height: 50px; margin-bottom: 10px;">
+            <div class="badge-kiosk" style="border-color: rgba(212, 175, 55, 0.4); color: var(--gold); background: rgba(212, 175, 55, 0.1); margin-bottom: 6px;">Session Completed</div>
+            <h1 class="screen-title" style="color: var(--gold); margin-bottom: 4px;">Hands-Free Master!</h1>
+            <p class="screen-desc" style="margin-bottom: 10px;">Multi-tasking banking completed with high-speed precision.</p>
+            <div style="font-size: 0.75rem; letter-spacing: 2px; opacity: 0.7; margin-top: 6px;">FINAL SCORE</div>
+            <div style="font-family: 'Outfit', sans-serif; font-size: clamp(2.8rem, 8vw, 3.8rem); font-weight: 900; color: white; line-height: 1.1;" id="finalScore">0</div>
+            <button class="btn-start" onclick="location.reload()" style="margin-top: 14px;">PLAY AGAIN</button>
+        </div>
+    </div>
+
+<script>
+    const GAME_ID = 'multitasker';
+    const videoElement = document.getElementById('input_video');
+    const canvasElement = document.getElementById('output_canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    
+    let score = 0;
+    let streak = 1;
+    let gameActive = false;
+    let currentTilt = 0; 
+    let activeBubble = null;
+    let isMuted = false;
+
+    const TASKS = [
+        { label: "CEB ELECTRICITY", amt: "Rs. 4,500", goal: "RIGHT" },
+        { label: "FUND TRANSFER", amt: "Rs. 25,000", goal: "RIGHT" },
+        { label: "CREDIT CARD", amt: "Rs. 12,000", goal: "RIGHT" },
+        { label: "SPAM PROMO", amt: "UNKNOWN LINK", goal: "LEFT" },
+        { label: "WATER BOARD", amt: "Rs. 1,200", goal: "RIGHT" },
+        { label: "SUSPICIOUS OTP", amt: "BLOCKED", goal: "LEFT" },
+        { label: "e-FIXED DEPOSIT", amt: "Rs. 100,000", goal: "RIGHT" }
+    ];
+
+    let audioCtx = null;
+    function getAudioContext() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        return audioCtx;
+    }
+
+    function playSfx(freq1, freq2) {
+        if (isMuted) return;
+        try {
+            const ctx = getAudioContext();
+            if (ctx.state === 'suspended') ctx.resume();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(freq1, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(freq2, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
+            osc.start(); osc.stop(ctx.currentTime + 0.2);
+        } catch (e) { console.warn(e); }
+    }
+
+    const faceMesh = new FaceMesh({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}` });
+    faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.6 });
+    faceMesh.onResults(results => {
+        if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) return;
+        const lm = results.multiFaceLandmarks[0];
+        const leftEye = lm[33]; const rightEye = lm[263];
+        
+        // Tilt Calculation
+        const rawAngle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x) * (180 / Math.PI);
+        currentTilt = currentTilt * 0.8 + rawAngle * 0.2; // Smoother tracking
+
+        draw(results.image, lm);
+    });
+
+    const camera = new Camera(videoElement, {
+        onFrame: async () => {
+            if (videoElement.videoWidth > 0) {
+                await faceMesh.send({ image: videoElement });
+            }
+        },
+        width: 1280, height: 720
+    });
+    camera.start().catch(e => console.warn("Camera error:", e));
+
+    let timeLeft = 45;
+    let timerInterval = null;
+
+    try {
+        window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: '00:45' }, '*');
+        window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: 0 }, '*');
+    } catch(e){}
+
+    function startGame() {
+        getAudioContext();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        document.getElementById('startScreen').classList.add('hidden');
+        gameActive = true;
+        timeLeft = 45;
+        spawnBubble();
+        window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: '00:45' }, '*');
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const formatted = `00:${timeLeft.toString().padStart(2, '0')}`;
+            window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: formatted }, '*');
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                gameActive = false;
+                document.getElementById('gameOverScreen').classList.remove('hidden');
+                document.getElementById('finalScore').innerText = score;
+                window.parent.postMessage({
+                    type: 'GAME_OVER',
+                    gameId: GAME_ID,
+                    score: score,
+                    title: 'The Multitasker’s Masterpiece'
+                }, '*');
+            }
+        }, 1000);
+    }
+
+    function spawnBubble() {
+        if (!gameActive) return;
+        const task = TASKS[Math.floor(Math.random() * TASKS.length)];
+        activeBubble = {
+            x: canvasElement.width / 2,
+            y: -80,
+            vy: 4.2,
+            task: task,
+            radius: 88
+        };
+    }
+
+    function draw(image, lm) {
+        if (canvasElement.width !== canvasElement.clientWidth || canvasElement.height !== canvasElement.clientHeight) {
+            canvasElement.width = canvasElement.clientWidth;
+            canvasElement.height = canvasElement.clientHeight;
+        }
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        
+        // 1. Mirror Video Feed
+        canvasCtx.scale(-1, 1);
+        canvasCtx.translate(-canvasElement.width, 0);
+        canvasCtx.globalAlpha = 0.65;
+        if (image) {
+            canvasCtx.drawImage(image, 0, 0, canvasElement.width, canvasElement.height);
+        }
+        canvasCtx.restore();
+
+        // 2. High-Tech AR Visor
+        if (lm) drawVisor(lm);
+
+        if (!gameActive) return;
+
+        // 3. Update & Draw Falling Bubble
+        if (activeBubble) {
+            const sensitivity = 2.2;
+            activeBubble.x += currentTilt * sensitivity;
+            activeBubble.y += activeBubble.vy;
+
+            // Boundaries
+            if (activeBubble.x < 100) activeBubble.x = 100;
+            if (activeBubble.x > canvasElement.width - 100) activeBubble.x = canvasElement.width - 100;
+
+            // Draw Bubble
+            canvasCtx.save();
+            canvasCtx.shadowBlur = 35;
+            canvasCtx.shadowColor = activeBubble.task.goal === 'RIGHT' ? 'rgba(0, 255, 136, 0.5)' : 'rgba(255, 77, 77, 0.5)';
+            canvasCtx.fillStyle = 'rgba(5, 11, 24, 0.85)';
+            canvasCtx.strokeStyle = activeBubble.task.goal === 'RIGHT' ? '#00ff88' : '#ff4d4d';
+            canvasCtx.lineWidth = 3;
+            canvasCtx.beginPath();
+            canvasCtx.arc(activeBubble.x, activeBubble.y, activeBubble.radius, 0, Math.PI * 2);
+            canvasCtx.fill(); canvasCtx.stroke();
+            
+            canvasCtx.fillStyle = 'white';
+            canvasCtx.textAlign = 'center';
+            canvasCtx.font = 'bold 16px "Outfit", sans-serif';
+            canvasCtx.fillText(activeBubble.task.label, activeBubble.x, activeBubble.y - 12);
+            canvasCtx.font = '14px "Plus Jakarta Sans", sans-serif';
+            canvasCtx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            canvasCtx.fillText(activeBubble.task.amt, activeBubble.x, activeBubble.y + 18);
+            canvasCtx.restore();
+
+            // 4. Portal Hit Testing
+            const portalY = canvasElement.height - 100;
+            const distLeft = Math.hypot(activeBubble.x - 110, activeBubble.y - portalY);
+            const distRight = Math.hypot(activeBubble.x - (canvasElement.width - 110), activeBubble.y - portalY);
+
+            const leftPortal = document.getElementById('p-left');
+            const rightPortal = document.getElementById('p-right');
+            if (leftPortal) leftPortal.className = `portal decline ${distLeft < 150 ? 'active-portal' : ''}`;
+            if (rightPortal) rightPortal.className = `portal approve ${distRight < 150 ? 'active-portal' : ''}`;
+
+            if (distLeft < 95 || distRight < 95) {
+                const choice = distRight < 95 ? "RIGHT" : "LEFT";
+                if (choice === activeBubble.task.goal) {
+                    score += 100 * streak;
+                    streak = Math.min(10, streak + 1);
+                    playSfx(440, 880);
+                } else {
+                    streak = 1;
+                    playSfx(200, 100);
+                }
+                document.getElementById('scoreLabel').innerText = score;
+                document.getElementById('streakLabel').innerText = `Streak x${streak}`;
+                window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: score }, '*');
+                activeBubble = null;
+                setTimeout(spawnBubble, 500);
+            } else if (activeBubble.y > canvasElement.height + 100) {
+                streak = 1; 
+                document.getElementById('streakLabel').innerText = `Streak x${streak}`;
+                activeBubble = null;
+                setTimeout(spawnBubble, 500);
+            }
+        }
+    }
+
+    function drawVisor(lm) {
+        const mid = lm[168]; 
+        const x = (1 - mid.x) * canvasElement.width;
+        const y = mid.y * canvasElement.height;
+        const width = Math.abs(lm[454].x - lm[234].x) * canvasElement.width * 1.35;
+
+        canvasCtx.save();
+        canvasCtx.translate(x, y);
+        canvasCtx.rotate(currentTilt * (Math.PI / 180));
+        
+        canvasCtx.strokeStyle = '#f37021';
+        canvasCtx.lineWidth = 3;
+        canvasCtx.beginPath();
+        if (canvasCtx.roundRect) {
+            canvasCtx.roundRect(-width/2, -35, width, 24, 6);
+        } else {
+            canvasCtx.rect(-width/2, -35, width, 24);
+        }
+        canvasCtx.stroke();
+        
+        canvasCtx.fillStyle = 'rgba(243, 112, 33, 0.28)';
+        canvasCtx.fillRect(-width/2, -35, (width * (Date.now() % 1000 / 1000)), 24);
+        
+        canvasCtx.fillStyle = 'white';
+        canvasCtx.font = '11px monospace';
+        canvasCtx.fillText("VISHWA HANDS-FREE // TILT: " + Math.round(currentTilt) + "°", -width/2, -45);
+        canvasCtx.restore();
+    }
+
+    window.addEventListener('message', (e) => {
+        if (!e.data) return;
+        if (e.data.type === 'RESTART_GAME') location.reload();
+        if (e.data.type === 'TOGGLE_MUTE') isMuted = !!e.data.isMuted;
+    });
+</script>
+</body>
+</html>
