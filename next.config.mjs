@@ -2,7 +2,7 @@
 const isProd = process.env.NODE_ENV === 'production';
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH !== undefined 
   ? process.env.NEXT_PUBLIC_BASE_PATH 
-  : (isProd ? '/SampathVishwa' : '');
+  : (isProd ? '/sampath' : '');
 
 const nextConfig = {
   ...(isProd ? { output: 'export', trailingSlash: true } : {}),
