@@ -40,6 +40,7 @@ export default function GameTheaterModal({
 }: GameTheaterModalProps) {
   const [currentScore, setCurrentScore] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<string>(getInitialTime(game?.id));
+  const [currentLives, setCurrentLives] = useState<number>(3);
   const [isKioskRatio, setIsKioskRatio] = useState<boolean>(initialKioskAspect);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -48,6 +49,7 @@ export default function GameTheaterModal({
   useEffect(() => {
     setCurrentScore(0);
     setCurrentTime(getInitialTime(game?.id));
+    setCurrentLives(3);
     setIsKioskRatio(initialKioskAspect);
   }, [game, initialKioskAspect]);
 
@@ -65,6 +67,10 @@ export default function GameTheaterModal({
           const mins = Math.floor(e.data.timeLeft / 60);
           const secs = e.data.timeLeft % 60;
           setCurrentTime(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+        }
+      } else if (e.data.type === 'GAME_LIVES_UPDATE') {
+        if (typeof e.data.lives === 'number') {
+          setCurrentLives(e.data.lives);
         }
       } else if (e.data.type === 'GAME_OVER') {
         const finalScore = e.data.score || 0;
@@ -100,6 +106,7 @@ export default function GameTheaterModal({
       iframeRef.current.src = gameSrc;
       setCurrentScore(0);
       setCurrentTime(getInitialTime(game?.id));
+      setCurrentLives(3);
     }
   };
 
@@ -248,6 +255,55 @@ export default function GameTheaterModal({
           }}>
             {currentTime}
           </div>
+
+          {/* Shields Section for Biometric Defense */}
+          {game.id === 'biometric-shield' && (
+            <>
+              <div style={{
+                width: '1px',
+                height: '24px',
+                background: 'rgba(0, 242, 255, 0.3)',
+                flexShrink: 0
+              }} />
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(5, 11, 24, 0.85)',
+                padding: '6px 14px',
+                borderRadius: '20px',
+                border: '1px solid rgba(0, 242, 255, 0.4)',
+                boxShadow: '0 0 12px rgba(0, 242, 255, 0.25)',
+                flexShrink: 0
+              }}>
+                <span style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 800,
+                  letterSpacing: '1px',
+                  color: '#00f2ff',
+                  lineHeight: 1
+                }}>
+                  SHIELDS
+                </span>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        background: i < currentLives ? '#f37021' : '#27272a',
+                        boxShadow: i < currentLives ? '0 0 8px #f37021' : 'none',
+                        opacity: i < currentLives ? 1 : 0.35,
+                        transition: 'all 0.3s ease'
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Right: Actions */}
