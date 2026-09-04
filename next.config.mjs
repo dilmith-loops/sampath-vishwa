@@ -5,12 +5,11 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH !== undefined
   : (isProd ? '/SampathVishwa' : '');
 
 const nextConfig = {
-  output: 'export',
+  ...(isProd ? { output: 'export', trailingSlash: true } : {}),
   basePath: basePath || undefined,
   images: {
     unoptimized: true,
   },
-  trailingSlash: true,
 };
 
 export default nextConfig;
