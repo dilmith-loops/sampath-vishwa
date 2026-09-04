@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { withBasePath } from '@/utils/paths';
-import { Trophy, HelpCircle, Smartphone, Volume2, VolumeX, Camera, Maximize2 } from 'lucide-react';
+import { Trophy, HelpCircle, Smartphone, Volume2, VolumeX, Maximize2 } from 'lucide-react';
 
 interface NavbarProps {
   onOpenLeaderboard: () => void;
@@ -18,20 +18,7 @@ export default function Navbar({
   isKioskAspect,
   onToggleKioskAspect
 }: NavbarProps) {
-  const [cameraActive, setCameraActive] = useState<boolean | null>(null);
   const [isSoundMuted, setIsSoundMuted] = useState(false);
-
-  useEffect(() => {
-    // Check if camera permission was previously granted or devices exist
-    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      navigator.mediaDevices.enumerateDevices()
-        .then(devices => {
-          const hasCam = devices.some(d => d.kind === 'videoinput');
-          setCameraActive(hasCam);
-        })
-        .catch(() => setCameraActive(false));
-    }
-  }, []);
 
   const toggleSound = () => {
     setIsSoundMuted(!isSoundMuted);
@@ -86,60 +73,11 @@ export default function Navbar({
               priority
             />
           </div>
-
-          {/* Subtle Camera Indicator Dot on Mobile */}
-          <div
-            title={cameraActive ? 'Camera Ready for AR Gestures' : 'Camera Off'}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '2px 4px',
-              cursor: 'pointer'
-            }}
-          >
-            <span style={{
-              width: 7,
-              height: 7,
-              borderRadius: '50%',
-              backgroundColor: cameraActive ? '#00ff88' : '#f37021',
-              boxShadow: cameraActive ? '0 0 8px #00ff88' : 'none',
-              display: 'inline-block'
-            }} />
-          </div>
         </div>
       </div>
 
       {/* Right Controls & Nav actions */}
       <div className="nav-controls">
-        {/* Full Camera Status Pill (Desktop only) */}
-        <div
-          title={cameraActive ? 'Webcam detected' : 'Webcam required for AR motion'}
-          className="hide-on-mobile"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            padding: '7px 12px',
-            borderRadius: '30px',
-            fontSize: '0.8rem',
-            color: cameraActive ? '#00ff88' : '#cbd5e1'
-          }}
-        >
-          <Camera size={15} color={cameraActive ? '#00ff88' : '#f37021'} />
-          <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>
-            {cameraActive === null ? 'Checking Camera...' : cameraActive ? 'Camera Ready' : 'Camera Off'}
-          </span>
-          <span style={{
-            width: 7,
-            height: 7,
-            borderRadius: '50%',
-            backgroundColor: cameraActive ? '#00ff88' : '#f37021',
-            boxShadow: cameraActive ? '0 0 8px #00ff88' : 'none'
-          }} />
-        </div>
-
         {/* Kiosk Mode Ratio Toggle (Desktop only: phone is naturally portrait) */}
         <button
           id="btn-toggle-kiosk-view"
