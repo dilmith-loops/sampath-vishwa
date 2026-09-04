@@ -5,6 +5,7 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH !== undefined
   : (isProd ? '/sampath' : '');
 
 const nextConfig = {
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   ...(isProd ? { output: 'export', trailingSlash: true } : {}),
   basePath: basePath || undefined,
   images: {

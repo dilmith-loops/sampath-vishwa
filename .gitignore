@@ -11,6 +11,7 @@
 
 # Next.js build outputs
 /.next/
+/.next_dev/
 /.next_prod/
 /out/
 /build

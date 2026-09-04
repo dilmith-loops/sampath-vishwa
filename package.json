@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "NEXT_DIST_DIR=.next_dev next dev --turbo",
     "build": "next build",
     "start": "next start",
     "package": "next build && python3 -c \"import zipfile, os; zf = zipfile.ZipFile('hostinger-deploy.zip', 'w', zipfile.ZIP_DEFLATED); [zf.write(os.path.join(r, f), os.path.relpath(os.path.join(r, f), 'out')) for r, d, files in os.walk('out') for f in files]; zf.close(); print('Ready: hostinger-deploy.zip')\""
