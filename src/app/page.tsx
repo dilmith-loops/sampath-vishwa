@@ -24,8 +24,6 @@ export default function HomePage() {
   const [isKioskAspect, setIsKioskAspect] = useState<boolean>(true);
   const [scores, setScores] = useState<ScoreRecord[]>([]);
 
-  const gamesSectionRef = useRef<HTMLDivElement>(null);
-
   // Load scores from localStorage
   useEffect(() => {
     try {
@@ -74,10 +72,6 @@ export default function HomePage() {
     return Math.max(...gameScores.map(s => s.score));
   };
 
-  const scrollToGames = () => {
-    gamesSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
     <>
       <Navbar
@@ -89,17 +83,10 @@ export default function HomePage() {
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Hero Showcase Section */}
-        <HeroSection
-          featuredGame={GAMES[0]}
-          onQuickPlay={(game) => setSelectedGameForPlay(game)}
-          onScrollToGames={scrollToGames}
-        />
+        <HeroSection />
 
         {/* Interactive Games Catalog Section */}
-        <section
-          ref={gamesSectionRef}
-          className="catalog-section"
-        >
+        <section className="catalog-section">
           {/* 4 Games Grid */}
           <div className="games-grid">
             {GAMES.map(game => (

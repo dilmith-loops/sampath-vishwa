@@ -452,27 +452,7 @@ button, a, input, select {
   .hero-description {
     font-size: 0.92rem !important;
     line-height: 1.55 !important;
-    margin-bottom: 20px !important;
-  }
-
-  .hero-cta-group {
-    flex-direction: column !important;
-    width: 100% !important;
-    gap: 10px !important;
-    margin-bottom: 24px !important;
-  }
-
-  .hero-cta-group button {
-    width: 100% !important;
-    justify-content: center !important;
-    padding: 13px 20px !important;
-    font-size: 0.95rem !important;
-  }
-
-  .hero-features {
-    grid-template-columns: 1fr !important;
-    max-width: 100% !important;
-    gap: 8px !important;
+    margin-bottom: 8px !important;
   }
 
   .catalog-section {
