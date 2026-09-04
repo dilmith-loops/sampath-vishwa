@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sampath Vishwa - AR Hover & Settle</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+
+    <style>
+        :root {
+            --sampath-orange: #f37021;
+            --deep-navy: #050b18;
+            --gold: #d4af37;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #000; color: white;
+            font-family: 'Segoe UI', sans-serif; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        #app-container {
+            position: relative;
+            width: 100vh; height: 177.78vh;
+            max-width: 100vw; max-height: 100vh;
+            background: var(--deep-navy);
+            overflow: hidden; border: 2px solid #333; border-radius: 20px;
+        }
+
+        video { display: none; }
+        canvas { width: 100%; height: 100%; transform: scaleX(-1); }
+
+        .ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+        }
+
+        .header {
+            padding: 40px; display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(to bottom, rgba(5,11,24,0.9), transparent);
+        }
+
+        .score-box { border-left: 5px solid var(--sampath-orange); padding-left: 15px; }
+        .timer-box { font-size: 2.2rem; font-weight: 800; color: var(--gold); }
+
+        .overlay-screen {
+            position: absolute; inset: 0; background: rgba(5, 11, 24, 0.95);
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; padding: 40px; z-index: 100;
+        }
+
+        .btn-start {
+            background: var(--sampath-orange); color: white; border: none;
+            padding: 22px 60px; font-size: 1.4rem; font-weight: bold;
+            border-radius: 50px; cursor: pointer; margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(243, 112, 33, 0.4);
+        }
+
+        .logo-placeholder { width: 120px; height: 120px; margin-bottom: 20px; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <video id="webcam" autoplay playsinline></video>
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="ui-layer">
+            <div class="header">
+                <div class="score-box">
+                    <div style="font-size: 0.9rem; opacity: 0.7; letter-spacing: 2px;">POINTS</div>
+                    <div id="scoreLabel" style="font-size: 2.5rem; font-weight: 900;">0000</div>
+                </div>
+                <div class="timer-box" id="timerLabel">00:30</div>
+            </div>
+        </div>
+
+        <div id="startScreen" class="overlay-screen">
+            <!-- SVG Logo for Sampath Vishwa -->
+            <svg class="logo-placeholder" viewBox="0 0 100 100">
+                <rect width="100" height="100" rx="20" fill="#f37021"/>
+                <path d="M50 25 L70 45 L50 65 L30 45 Z" fill="white"/>
+                <circle cx="50" cy="45" r="12" fill="none" stroke="white" stroke-width="3"/>
+            </svg>
+            <h1 style="color: var(--sampath-orange); font-size: 2.8rem; margin: 0;">Swipe & Settle</h1>
+            <p style="font-size: 1.2rem; opacity: 0.8;">Bills are floating around you!<br>Grab and swipe them into the phone below.</p>
+            <button class="btn-start" onclick="startGame()">START EXPERIENCE</button>
+        </div>
+
+        <div id="gameOverScreen" class="overlay-screen hidden">
+            <h1 style="color: var(--gold);">SESSION COMPLETE</h1>
+            <p>You settled your utility bills in seconds!</p>
+            <div style="font-size: 4rem; margin: 20px 0; color: white;" id="finalScore">0</div>
+            <button class="btn-start" onclick="location.reload()">RESTART</button>
+        </div>
+    </div>
+
+<script>
+    const videoElement = document.getElementById('webcam');
+    const canvasElement = document.getElementById('gameCanvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    
+    let score = 0;
+    let timeLeft = 30;
+    let gameActive = false;
+    let bills = [];
+    let handPos = { x: 0, y: 0, active: false };
+    let grabbedBill = null;
+    let timerInterval;
+
+    const BILL_TYPES = [
+        { label: 'ELECTRICITY', color: '#ffcc00', icon: '⚡' },
+        { label: 'WATER BILL', color: '#00a3ff', icon: '💧' },
+        { label: 'MOBILE', color: '#ff0055', icon: '📱' },
+        { label: 'INTERNET', color: '#00ffcc', icon: '🌐' }
+    ];
+
+    // Audio Setup
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSfx() {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+    }
+
+    // MediaPipe Hands
+    const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+    hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6 });
+    hands.onResults(results => {
+        handPos.active = false;
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+            const tip = results.multiHandLandmarks[0][8]; // Index Finger Tip
+            handPos.x = tip.x * canvasElement.width;
+            handPos.y = tip.y * canvasElement.height;
+            handPos.active = true;
+        }
+        draw();
+    });
+
+    const camera = new Camera(videoElement, {
+        onFrame: async () => { await hands.send({image: videoElement}); },
+        width: 720, height: 1280
+    });
+    camera.start();
+
+    function startGame() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        document.getElementById('startScreen').classList.add('hidden');
+        gameActive = true;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timerLabel').innerText = `00:${timeLeft.toString().padStart(2, '0')}`;
+            if (timeLeft <= 0) endGame();
+        }, 1000);
+    }
+
+    function endGame() {
+        gameActive = false;
+        clearInterval(timerInterval);
+        document.getElementById('gameOverScreen').classList.remove('hidden');
+        document.getElementById('finalScore').innerText = score;
+    }
+
+    function spawnBill() {
+        if (!gameActive || bills.length >= 6) return;
+        const type = BILL_TYPES[Math.floor(Math.random() * BILL_TYPES.length)];
+        bills.push({
+            id: Date.now(),
+            // Spawn in a floating zone (head area)
+            baseX: 150 + Math.random() * (canvasElement.width - 300),
+            baseY: 150 + Math.random() * (canvasElement.height / 2),
+            x: 0, y: 0,
+            angle: Math.random() * Math.PI * 2,
+            floatSpeed: 0.02 + Math.random() * 0.02,
+            type: type,
+            grabbed: false
+        });
+    }
+
+    setInterval(spawnBill, 1200);
+
+    function draw() {
+        if (canvasElement.width !== canvasElement.clientWidth) {
+            canvasElement.width = canvasElement.clientWidth;
+            canvasElement.height = canvasElement.clientHeight;
+        }
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0,0, canvasElement.width, canvasElement.height);
+        
+        // Mirror Background Video
+        canvasCtx.scale(-1, 1);
+        canvasCtx.translate(-canvasElement.width, 0);
+        canvasCtx.globalAlpha = 0.7;
+        canvasCtx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+        canvasCtx.restore();
+
+        // HUD Phone Zone (The QuickPay Dropzone)
+        const phoneW = 320;
+        const phoneY = canvasElement.height - 380;
+        const phoneX = canvasElement.width/2 - phoneW/2;
+        
+        // Draw Phone
+        canvasCtx.fillStyle = 'rgba(10, 20, 40, 0.9)';
+        canvasCtx.beginPath(); canvasCtx.roundRect(phoneX, phoneY, phoneW, 500, 40); canvasCtx.fill();
+        canvasCtx.strokeStyle = 'var(--sampath-orange)';
+        canvasCtx.lineWidth = 3; canvasCtx.stroke();
+        
+        canvasCtx.fillStyle = 'white';
+        canvasCtx.font = 'bold 22px Arial';
+        canvasCtx.textAlign = 'center';
+        canvasCtx.fillText("VISHWA QUICKPAY", phoneX + phoneW/2, phoneY + 80);
+        canvasCtx.font = '14px Arial';
+        canvasCtx.globalAlpha = 0.6;
+        canvasCtx.fillText("SWIPE BILLS HERE TO SETTLE", phoneX + phoneW/2, phoneY + 110);
+        canvasCtx.globalAlpha = 1.0;
+
+        // Draw Hovering Bills
+        bills.forEach((bill, index) => {
+            if (!bill.grabbed) {
+                // Organic Floating Logic
+                bill.angle += bill.floatSpeed;
+                bill.x = bill.baseX + Math.sin(bill.angle) * 40;
+                bill.y = bill.baseY + Math.cos(bill.angle * 0.8) * 30;
+
+                // Grab Detection (Mirror hand X)
+                if (handPos.active && !grabbedBill) {
+                    const hX = canvasElement.width - handPos.x;
+                    const dist = Math.hypot(hX - bill.x, handPos.y - bill.y);
+                    if (dist < 90) {
+                        bill.grabbed = true;
+                        grabbedBill = bill;
+                    }
+                }
+            } else {
+                // Stick to Hand
+                bill.x = canvasElement.width - handPos.x;
+                bill.y = handPos.y;
+
+                // Settlement Logic (Drop in phone)
+                if (bill.y > phoneY && bill.x > phoneX && bill.x < phoneX + phoneW) {
+                    score += 100;
+                    document.getElementById('scoreLabel').innerText = score.toString().padStart(4, '0');
+                    playSfx();
+                    bills.splice(index, 1);
+                    grabbedBill = null;
+                    return;
+                }
+                
+                // Release if hand lost
+                if (!handPos.active) {
+                    bill.grabbed = false;
+                    bill.baseX = bill.x; bill.baseY = bill.y;
+                    grabbedBill = null;
+                }
+            }
+
+            // Render Bill Graphic
+            canvasCtx.save();
+            canvasCtx.shadowBlur = 20; canvasCtx.shadowColor = 'rgba(0,0,0,0.5)';
+            canvasCtx.fillStyle = 'white';
+            canvasCtx.beginPath();
+            canvasCtx.roundRect(bill.x - 90, bill.y - 55, 180, 110, 12);
+            canvasCtx.fill();
+            
+            // Accent Color Bar
+            canvasCtx.fillStyle = bill.type.color;
+            canvasCtx.fillRect(bill.x - 90, bill.y - 15, 180, 35);
+            
+            canvasCtx.fillStyle = '#333';
+            canvasCtx.font = 'bold 16px Arial';
+            canvasCtx.textAlign = 'center';
+            canvasCtx.fillText(bill.type.label, bill.x, bill.y - 25);
+            canvasCtx.font = 'bold 18px Arial';
+            canvasCtx.fillStyle = 'white';
+            canvasCtx.fillText(bill.type.icon + " PAY NOW", bill.x, bill.y + 10);
+            canvasCtx.restore();
+        });
+
+        // Hand Cursor (Glowing Trail)
+        if (handPos.active) {
+            const hX = canvasElement.width - handPos.x;
+            canvasCtx.beginPath();
+            const g = canvasCtx.createRadialGradient(hX, handPos.y, 0, hX, handPos.y, 45);
+            g.addColorStop(0, 'rgba(243, 112, 33, 0.9)');
+            g.addColorStop(1, 'rgba(243, 112, 33, 0)');
+            canvasCtx.fillStyle = g;
+            canvasCtx.arc(hX, handPos.y, 45, 0, Math.PI*2);
+            canvasCtx.fill();
+            
+            canvasCtx.fillStyle = 'white';
+            canvasCtx.beginPath(); canvasCtx.arc(hX, handPos.y, 10, 0, Math.PI*2); canvasCtx.fill();
+        }
+    }
+</script>
+</body>
+</html>

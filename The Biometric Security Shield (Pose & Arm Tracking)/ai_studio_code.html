@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sampath Vishwa - Biometric Defense</title>
+    
+    <!-- MediaPipe Pose Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+
+    <style>
+        :root {
+            --sampath-orange: #f37021;
+            --cyber-blue: #00f2ff;
+            --deep-navy: #050b18;
+            --danger-red: #ff3e3e;
+            --success-green: #00ff88;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #000; color: white;
+            font-family: 'Segoe UI', sans-serif; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        #app-container {
+            position: relative;
+            width: 100vh; height: 177.78vh; /* 9:16 Vertical Ratio */
+            max-width: 100vw; max-height: 100vh;
+            background: var(--deep-navy);
+            overflow: hidden; border: 2px solid #333; border-radius: 20px;
+        }
+
+        video { display: none; }
+        canvas { width: 100%; height: 100%; }
+
+        /* HUD Styling */
+        .hud-overlay {
+            position: absolute; inset: 0; pointer-events: none; z-index: 10;
+        }
+
+        .header {
+            padding: 40px; display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(to bottom, rgba(5,11,24,0.9), transparent);
+        }
+
+        .security-badge {
+            border: 2px solid var(--cyber-blue); padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.1); border-radius: 10px;
+            text-align: right;
+        }
+
+        .shield-meter {
+            display: flex; gap: 10px; margin-top: 10px;
+        }
+
+        .shield-dot {
+            width: 20px; height: 20px; border-radius: 50%;
+            background: var(--sampath-orange); box-shadow: 0 0 10px var(--sampath-orange);
+        }
+
+        .shield-lost { background: #333; box-shadow: none; }
+
+        /* Screens */
+        .screen {
+            position: absolute; inset: 0; background: rgba(5, 11, 24, 0.98);
+            z-index: 100; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; padding: 50px;
+        }
+
+        .btn-start {
+            background: var(--sampath-orange); color: white; border: none;
+            padding: 24px 70px; font-size: 1.5rem; font-weight: bold;
+            border-radius: 50px; cursor: pointer; margin-top: 40px;
+            box-shadow: 0 10px 40px rgba(243, 112, 33, 0.4);
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <video id="input_video"></video>
+        <canvas id="output_canvas"></canvas>
+
+        <div class="hud-overlay">
+            <div class="header">
+                <div>
+                    <div style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.7;">VISHWA SHIELD STATUS</div>
+                    <div class="shield-meter" id="shieldMeter">
+                        <div class="shield-dot"></div>
+                        <div class="shield-dot"></div>
+                        <div class="shield-dot"></div>
+                    </div>
+                </div>
+                <div class="security-badge">
+                    <div style="font-size: 0.7rem; opacity: 0.8;">SECURITY RATING</div>
+                    <div id="ratingLabel" style="font-size: 1.8rem; font-weight: 900; color: var(--cyber-blue);">99.9%</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="startScreen" class="screen">
+            <h1 style="color: var(--sampath-orange); font-size: 3rem; margin-bottom: 10px;">Biometric Defense</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6;">Use your arms to generate a security shield.<br>Deflect <b>RED</b> threats, collect <b>GREEN</b> tokens.</p>
+            <button class="btn-start" onclick="startGame()">INITIALIZE DEFENSE</button>
+        </div>
+
+        <div id="gameOverScreen" class="screen hidden">
+            <h1 id="gameResultTitle" style="color: var(--danger-red); font-size: 3rem;">Breach Detected!</h1>
+            <p style="font-size: 1.3rem;">But with Sampath Vishwa, your funds remain safe.</p>
+            <div style="font-size: 1rem; color: var(--gold); margin-top: 20px;">FINAL SCORE: <span id="finalScore">0</span></div>
+            <button class="btn-start" onclick="location.reload()">RE-INITIALIZE</button>
+        </div>
+    </div>
+
+<script>
+    const videoElement = document.getElementById('input_video');
+    const canvasElement = document.getElementById('output_canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    
+    let score = 0;
+    let lives = 3;
+    let gameActive = false;
+    let objects = [];
+    let poseData = null;
+
+    // --- Audio System ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(freq, type = 'sine', duration = 0.2) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // --- MediaPipe Pose ---
+    const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
+    pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+    
+    pose.onResults(results => {
+        poseData = results.poseLandmarks;
+        draw(results.image);
+    });
+
+    const camera = new Camera(videoElement, {
+        onFrame: async () => { await pose.send({image: videoElement}); },
+        width: 720, height: 1280
+    });
+    camera.start();
+
+    function startGame() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        document.getElementById('startScreen').classList.add('hidden');
+        gameActive = true;
+        playSound(800, 'square', 0.5); // Start hum
+    }
+
+    function spawnObject() {
+        if (!gameActive) return;
+        const isSafe = Math.random() > 0.4;
+        const labels = isSafe ? ["OTP Verified", "Bio Match", "Safe Link"] : ["Phishing", "Malware", "Fake SMS"];
+        
+        objects.push({
+            x: Math.random() > 0.5 ? -50 : canvasElement.width + 50,
+            y: 100 + Math.random() * (canvasElement.height / 2),
+            vx: 0, vy: 0,
+            targetX: canvasElement.width / 2,
+            targetY: canvasElement.height / 2,
+            type: isSafe ? 'SAFE' : 'THREAT',
+            label: labels[Math.floor(Math.random() * labels.length)],
+            speed: 4 + Math.random() * 4,
+            deflected: false
+        });
+    }
+    setInterval(spawnObject, 1200);
+
+    function draw(image) {
+        if (canvasElement.width !== canvasElement.clientWidth) {
+            canvasElement.width = canvasElement.clientWidth;
+            canvasElement.height = canvasElement.clientHeight;
+        }
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0,0, canvasElement.width, canvasElement.height);
+
+        // 1. Mirrored Camera Feed
+        canvasCtx.scale(-1, 1);
+        canvasCtx.translate(-canvasElement.width, 0);
+        canvasCtx.globalAlpha = 0.6;
+        canvasCtx.drawImage(image, 0, 0, canvasElement.width, canvasElement.height);
+        canvasCtx.restore();
+
+        if (!poseData) return;
+
+        // 2. Draw Biometric Grid on Torso
+        drawBiometricGrid();
+
+        // 3. Wrist Shield Tracking
+        const leftWrist = poseData[15];
+        const rightWrist = poseData[16];
+        const shoulderMid = { 
+            x: (poseData[11].x + poseData[12].x) / 2, 
+            y: (poseData[11].y + poseData[12].y) / 2 
+        };
+
+        const shield = {
+            x1: (1 - leftWrist.x) * canvasElement.width,
+            y1: leftWrist.y * canvasElement.height,
+            x2: (1 - rightWrist.x) * canvasElement.width,
+            y2: rightWrist.y * canvasElement.height
+        };
+
+        // Render Hex Shield
+        if (gameActive) {
+            canvasCtx.save();
+            canvasCtx.beginPath();
+            canvasCtx.strokeStyle = 'var(--cyber-blue)';
+            canvasCtx.lineWidth = 15;
+            canvasCtx.lineCap = 'round';
+            canvasCtx.shadowBlur = 25; canvasCtx.shadowColor = 'var(--cyber-blue)';
+            canvasCtx.moveTo(shield.x1, shield.y1);
+            canvasCtx.lineTo(shield.x2, shield.y2);
+            canvasCtx.stroke();
+            
+            // Add hexagonal mesh effect (simplified)
+            canvasCtx.globalAlpha = 0.2;
+            canvasCtx.fillStyle = 'var(--cyber-blue)';
+            canvasCtx.lineTo(shield.x2, shield.y2 + 40);
+            canvasCtx.lineTo(shield.x1, shield.y1 + 40);
+            canvasCtx.fill();
+            canvasCtx.restore();
+        }
+
+        if (!gameActive) return;
+
+        // 4. Object Logic
+        const targetX = (1 - shoulderMid.x) * canvasElement.width;
+        const targetY = shoulderMid.y * canvasElement.height;
+
+        objects.forEach((obj, index) => {
+            // Move toward target
+            if (!obj.deflected) {
+                const angle = Math.atan2(targetY - obj.y, targetX - obj.x);
+                obj.x += Math.cos(angle) * obj.speed;
+                obj.y += Math.sin(angle) * obj.speed;
+
+                // Shield Collision (Deflection)
+                const distToShield = distToSegment(obj.x, obj.y, shield.x1, shield.y1, shield.x2, shield.y2);
+                if (distToShield < 50) {
+                    if (obj.type === 'THREAT') {
+                        obj.deflected = true;
+                        obj.vx = (obj.x - targetX) * 0.1;
+                        obj.vy = -10; // Blast upward
+                        playSound(1200, 'sawtooth');
+                        score += 100;
+                    }
+                }
+
+                // Torso Collision (Impact)
+                const distToTarget = Math.hypot(obj.x - targetX, obj.y - targetY);
+                if (distToTarget < 80) {
+                    if (obj.type === 'THREAT') {
+                        lives--;
+                        playSound(150, 'square', 0.4);
+                        updateShieldUI();
+                        if (lives <= 0) endGame();
+                    } else {
+                        score += 200;
+                        playSound(1000, 'sine');
+                    }
+                    objects.splice(index, 1);
+                    return;
+                }
+            } else {
+                obj.x += obj.vx;
+                obj.y += obj.vy;
+            }
+
+            // Draw Objects
+            drawSecurityObject(obj);
+
+            // Cleanup
+            if (obj.y < -100 || obj.y > canvasElement.height + 100) objects.splice(index, 1);
+        });
+    }
+
+    function drawBiometricGrid() {
+        const torso = [11, 12, 24, 23]; // Shoulders and Hips
+        canvasCtx.save();
+        canvasCtx.strokeStyle = 'rgba(0, 242, 255, 0.3)';
+        canvasCtx.lineWidth = 1;
+        canvasCtx.beginPath();
+        torso.forEach((idx, i) => {
+            const pt = poseData[idx];
+            const px = (1 - pt.x) * canvasElement.width;
+            const py = pt.y * canvasElement.height;
+            if (i === 0) canvasCtx.moveTo(px, py);
+            else canvasCtx.lineTo(px, py);
+        });
+        canvasCtx.closePath();
+        canvasCtx.stroke();
+        
+        // Face crosshair
+        const nose = poseData[0];
+        const nx = (1 - nose.x) * canvasElement.width;
+        const ny = nose.y * canvasElement.height;
+        canvasCtx.beginPath();
+        canvasCtx.arc(nx, ny, 40, 0, Math.PI*2);
+        canvasCtx.stroke();
+        canvasCtx.restore();
+    }
+
+    function drawSecurityObject(obj) {
+        canvasCtx.save();
+        const color = obj.type === 'SAFE' ? 'var(--success-green)' : 'var(--danger-red)';
+        canvasCtx.fillStyle = color;
+        canvasCtx.shadowBlur = 15; canvasCtx.shadowColor = color;
+        
+        canvasCtx.beginPath();
+        if (obj.type === 'SAFE') canvasCtx.arc(obj.x, obj.y, 25, 0, Math.PI*2);
+        else canvasCtx.rect(obj.x - 20, obj.y - 20, 40, 40);
+        canvasCtx.fill();
+
+        canvasCtx.fillStyle = 'white';
+        canvasCtx.font = 'bold 12px Arial';
+        canvasCtx.textAlign = 'center';
+        canvasCtx.fillText(obj.label, obj.x, obj.y + 45);
+        canvasCtx.restore();
+    }
+
+    function updateShieldUI() {
+        const dots = document.querySelectorAll('.shield-dot');
+        for(let i = 0; i < 3; i++) {
+            if (i >= lives) dots[i].classList.add('shield-lost');
+        }
+    }
+
+    function endGame() {
+        gameActive = false;
+        document.getElementById('gameOverScreen').classList.remove('hidden');
+        document.getElementById('finalScore').innerText = score;
+    }
+
+    // Helper: Distance to line segment
+    function distToSegment(px, py, x1, y1, x2, y2) {
+        const l2 = Math.hypot(x1 - x2, y1 - y2) ** 2;
+        if (l2 === 0) return Math.hypot(px - x1, py - y1);
+        let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
+    }
+</script>
+</body>
+</html>

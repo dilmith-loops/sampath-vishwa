@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sampath Vishwa - Hands-Free Steering</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+
+    <style>
+        :root {
+            --sampath-orange: #f37021;
+            --deep-navy: #050b18;
+            --gold: #d4af37;
+            --success: #00ff88;
+            --decline: #ff4d4d;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #000; color: white;
+            font-family: 'Segoe UI', sans-serif; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        #app-container {
+            position: relative;
+            width: 100vh; height: 177.78vh;
+            max-width: 100vw; max-height: 100vh;
+            background: var(--deep-navy);
+            overflow: hidden; border: 2px solid #333; border-radius: 24px;
+        }
+
+        video { display: none; }
+        
+        /* FIX: REMOVED scaleX(-1) so text doesn't mirror */
+        canvas { 
+            width: 100%; 
+            height: 100%; 
+        }
+
+        .ui-layer {
+            position: absolute; inset: 0; pointer-events: none; z-index: 10;
+        }
+
+        .header {
+            padding: 40px; display: flex; justify-content: space-between;
+            background: linear-gradient(to bottom, rgba(5,11,24,0.9), transparent);
+        }
+
+        .stat { text-align: center; border-left: 4px solid var(--sampath-orange); padding-left: 15px; }
+
+        .portals {
+            position: absolute; bottom: 50px; width: 100%;
+            display: flex; justify-content: space-between; padding: 0 40px; box-sizing: border-box;
+        }
+
+        .portal {
+            width: 140px; height: 140px; border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.2);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .portal.decline { border-color: var(--decline); color: var(--decline); }
+        .portal.approve { border-color: var(--success); color: var(--success); }
+        
+        .active-portal { transform: scale(1.15); box-shadow: 0 0 40px currentColor; background: rgba(255,255,255,0.15); }
+
+        .screen {
+            position: absolute; inset: 0; background: rgba(5, 11, 24, 0.98);
+            z-index: 100; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; padding: 40px;
+        }
+
+        .btn-start {
+            background: var(--sampath-orange); color: white; border: none;
+            padding: 24px 60px; font-size: 1.5rem; font-weight: bold;
+            border-radius: 50px; cursor: pointer; margin-top: 30px;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <video id="input_video"></video>
+        <canvas id="output_canvas"></canvas>
+
+        <div class="ui-layer">
+            <div class="header">
+                <div class="stat">
+                    <div style="font-size: 0.8rem; opacity: 0.6;">TASKS SETTLED</div>
+                    <div id="scoreLabel" style="font-size: 2.2rem; font-weight: 900;">0</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.8rem; opacity: 0.6;">STREAK</div>
+                    <div id="streakLabel" style="font-size: 2.2rem; font-weight: 900; color: var(--gold);">x1</div>
+                </div>
+            </div>
+
+            <div class="portals">
+                <div id="p-left" class="portal decline">
+                    <span style="font-size: 2.5rem;">✕</span>
+                    <span style="font-size: 0.8rem; font-weight: bold;">SKIP</span>
+                </div>
+                <div id="p-right" class="portal approve">
+                    <span style="font-size: 2.5rem;">✔</span>
+                    <span style="font-size: 0.8rem; font-weight: bold;">APPROVE</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="startScreen" class="screen">
+            <h1 style="color: var(--sampath-orange); font-size: 2.5rem;">Hands-Free Steering</h1>
+            <p style="font-size: 1.2rem;">Tilt your head <b>Left</b> or <b>Right</b><br>to guide banking tasks into the portals.</p>
+            <button class="btn-start" onclick="startGame()">START GAME</button>
+        </div>
+
+        <div id="gameOverScreen" class="screen hidden">
+            <h1 style="color: var(--gold);">SESSION ENDED</h1>
+            <div style="font-size: 4rem; margin: 20px 0;" id="finalScore">0</div>
+            <button class="btn-start" onclick="location.reload()">RESTART</button>
+        </div>
+    </div>
+
+<script>
+    const videoElement = document.getElementById('input_video');
+    const canvasElement = document.getElementById('output_canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    
+    let score = 0;
+    let streak = 1;
+    let gameActive = false;
+    let currentTilt = 0; 
+    let activeBubble = null;
+
+    const TASKS = [
+        { label: "CEB BILL", amt: "Rs. 4,500", goal: "RIGHT" },
+        { label: "FUND TRANSFER", amt: "Rs. 25,000", goal: "RIGHT" },
+        { label: "CREDIT CARD", amt: "Rs. 12,000", goal: "RIGHT" },
+        { label: "AD PROMO", amt: "DISCOUNT!", goal: "LEFT" },
+        { label: "WATER BILL", amt: "Rs. 1,200", goal: "RIGHT" }
+    ];
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSfx(freq1, freq2) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(freq1, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq2, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+    }
+
+    const faceMesh = new FaceMesh({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}` });
+    faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.6 });
+    faceMesh.onResults(results => {
+        if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) return;
+        const lm = results.multiFaceLandmarks[0];
+        const leftEye = lm[33]; const rightEye = lm[263];
+        
+        // Tilt Calculation
+        const rawAngle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x) * (180 / Math.PI);
+        currentTilt = currentTilt * 0.8 + rawAngle * 0.2; // Smoother tracking
+
+        draw(results.image, lm);
+    });
+
+    const camera = new Camera(videoElement, {
+        onFrame: async () => { await faceMesh.send({image: videoElement}); },
+        width: 720, height: 1280
+    });
+    camera.start();
+
+    function startGame() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        document.getElementById('startScreen').classList.add('hidden');
+        gameActive = true;
+        spawnBubble();
+        setTimeout(() => {
+            gameActive = false;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+            document.getElementById('finalScore').innerText = score;
+        }, 45000); 
+    }
+
+    function spawnBubble() {
+        if (!gameActive) return;
+        const task = TASKS[Math.floor(Math.random() * TASKS.length)];
+        activeBubble = {
+            x: canvasElement.width / 2,
+            y: -100,
+            vy: 4.5, // Faster drop
+            task: task,
+            radius: 95
+        };
+    }
+
+    function draw(image, lm) {
+        if (canvasElement.width !== canvasElement.clientWidth) {
+            canvasElement.width = canvasElement.clientWidth;
+            canvasElement.height = canvasElement.clientHeight;
+        }
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0,0, canvasElement.width, canvasElement.height);
+        
+        // 1. MIRROR VIDEO ONLY (JS Flip)
+        canvasCtx.scale(-1, 1);
+        canvasCtx.translate(-canvasElement.width, 0);
+        canvasCtx.globalAlpha = 0.65;
+        canvasCtx.drawImage(image, 0, 0, canvasElement.width, canvasElement.height);
+        canvasCtx.restore(); // Return to normal orientation for text
+
+        // 2. High-Tech AR Visor (Drawn in normal orientation)
+        drawVisor(lm);
+
+        if (!gameActive) return;
+
+        // 3. Update & Draw Falling Bubble
+        if (activeBubble) {
+            // Steering Sensitivity
+            const sensitivity = 1.8;
+            activeBubble.x += currentTilt * sensitivity;
+
+            activeBubble.y += activeBubble.vy;
+
+            // Boundaries
+            if (activeBubble.x < 100) activeBubble.x = 100;
+            if (activeBubble.x > canvasElement.width - 100) activeBubble.x = canvasElement.width - 100;
+
+            // Draw Bubble
+            canvasCtx.save();
+            canvasCtx.shadowBlur = 40; canvasCtx.shadowColor = 'rgba(243, 112, 33, 0.4)';
+            canvasCtx.fillStyle = 'rgba(255,255,255,0.18)';
+            canvasCtx.strokeStyle = 'rgba(255,255,255,0.6)';
+            canvasCtx.lineWidth = 3;
+            canvasCtx.beginPath();
+            canvasCtx.arc(activeBubble.x, activeBubble.y, activeBubble.radius, 0, Math.PI*2);
+            canvasCtx.fill(); canvasCtx.stroke();
+            
+            canvasCtx.fillStyle = 'white';
+            canvasCtx.textAlign = 'center';
+            canvasCtx.font = 'bold 20px Arial';
+            canvasCtx.fillText(activeBubble.task.label, activeBubble.x, activeBubble.y - 12);
+            canvasCtx.font = '16px Arial';
+            canvasCtx.globalAlpha = 0.8;
+            canvasCtx.fillText(activeBubble.task.amt, activeBubble.x, activeBubble.y + 24);
+            canvasCtx.restore();
+
+            // 4. Portal Hit Testing
+            const portalY = canvasElement.height - 120;
+            const distLeft = Math.hypot(activeBubble.x - 110, activeBubble.y - portalY);
+            const distRight = Math.hypot(activeBubble.x - (canvasElement.width - 110), activeBubble.y - portalY);
+
+            document.getElementById('p-left').className = `portal decline ${distLeft < 150 ? 'active-portal' : ''}`;
+            document.getElementById('p-right').className = `portal approve ${distRight < 150 ? 'active-portal' : ''}`;
+
+            if (distLeft < 100 || distRight < 100) {
+                const choice = distRight < 100 ? "RIGHT" : "LEFT";
+                if (choice === activeBubble.task.goal) {
+                    score += 100 * streak; streak++;
+                    playSfx(440, 880);
+                } else {
+                    streak = 1; playSfx(200, 100);
+                }
+                document.getElementById('scoreLabel').innerText = score;
+                document.getElementById('streakLabel').innerText = `x${streak}`;
+                activeBubble = null;
+                setTimeout(spawnBubble, 600);
+            } else if (activeBubble.y > canvasElement.height + 100) {
+                streak = 1; 
+                document.getElementById('streakLabel').innerText = `x${streak}`;
+                activeBubble = null;
+                setTimeout(spawnBubble, 600);
+            }
+        }
+    }
+
+    function drawVisor(lm) {
+        const mid = lm[168]; 
+        // Mirror the landmark coordinate for the non-mirrored canvas
+        const x = (1 - mid.x) * canvasElement.width;
+        const y = mid.y * canvasElement.height;
+        const width = Math.abs(lm[454].x - lm[234].x) * canvasElement.width * 1.35;
+
+        canvasCtx.save();
+        canvasCtx.translate(x, y);
+        canvasCtx.rotate(currentTilt * (Math.PI/180));
+        
+        canvasCtx.strokeStyle = 'var(--sampath-orange)';
+        canvasCtx.lineWidth = 3;
+        canvasCtx.beginPath();
+        canvasCtx.roundRect(-width/2, -40, width, 25, 6);
+        canvasCtx.stroke();
+        
+        canvasCtx.fillStyle = 'rgba(243, 112, 33, 0.25)';
+        canvasCtx.fillRect(-width/2, -40, (width * (Date.now()%1000/1000)), 25);
+        
+        canvasCtx.fillStyle = 'white';
+        canvasCtx.font = '10px monospace';
+        canvasCtx.fillText("VISHWA HANDS-FREE // TILT: " + Math.round(currentTilt) + "°", -width/2, -55);
+        canvasCtx.restore();
+    }
+</script>
+</body>
+</html>
