@@ -51,8 +51,47 @@
             padding: 8px 10px; box-sizing: border-box;
         }
 
+        .shield-meter-wrap {
+            align-self: center;
+            background: rgba(5, 11, 24, 0.75);
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            pointer-events: auto;
+        }
+        .shield-meter-label {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--cyber-blue);
+        }
+        .shield-meter {
+            display: flex;
+            gap: 6px;
+        }
+        .shield-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--sampath-orange);
+            box-shadow: 0 0 8px var(--sampath-orange);
+            transition: all 0.3s;
+        }
+        .shield-lost {
+            background: #27272a !important;
+            box-shadow: none !important;
+            opacity: 0.35 !important;
+        }
+
         @media (min-width: 540px) {
             .ui-layer { padding: 20px 24px; }
+            .shield-dot { width: 14px; height: 14px; }
         }
 
         .screen {
@@ -121,7 +160,16 @@
         <video id="input_video" autoplay playsinline muted></video>
         <canvas id="output_canvas"></canvas>
 
-        <div class="hud-overlay"></div>
+        <div class="hud-overlay">
+            <div class="shield-meter-wrap">
+                <span class="shield-meter-label">SHIELDS</span>
+                <div class="shield-meter" id="shieldMeter">
+                    <div class="shield-dot"></div>
+                    <div class="shield-dot"></div>
+                    <div class="shield-dot"></div>
+                </div>
+            </div>
+        </div>
 
         <div id="startScreen" class="screen">
             <img src="../../brand/vishwa-logo.png" alt="Sampath Vishwa" class="game-logo-large">
@@ -439,8 +487,12 @@
 
     function updateShieldUI() {
         const dots = document.querySelectorAll('.shield-dot');
-        for (let i = 0; i < 3; i++) {
-            if (i >= lives) dots[i].classList.add('shield-lost');
+        if (!dots || dots.length === 0) return;
+        for (let i = 0; i < dots.length; i++) {
+            if (dots[i]) {
+                if (i >= lives) dots[i].classList.add('shield-lost');
+                else dots[i].classList.remove('shield-lost');
+            }
         }
     }
 
