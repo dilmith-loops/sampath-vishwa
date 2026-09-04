@@ -50,76 +50,8 @@
             padding: 10px 12px; box-sizing: border-box;
         }
 
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            background: linear-gradient(180deg, rgba(5,11,24,0.94) 0%, rgba(5,11,24,0.75) 100%);
-            padding: 6px 10px; border-radius: 12px;
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-glass);
-            pointer-events: auto; width: 100%; box-sizing: border-box;
-            gap: 6px;
-        }
-
-        .brand-pill {
-            display: flex; align-items: center; gap: 6px;
-            min-width: 0; flex-shrink: 1; overflow: hidden;
-        }
-
-        .brand-pill > div {
-            min-width: 0; overflow: hidden;
-        }
-
-        .brand-icon {
-            width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(243, 112, 33, 0.35);
-        }
-
-        .brand-name {
-            font-family: 'Outfit', sans-serif; font-weight: 800;
-            font-size: 0.8rem; letter-spacing: 0.2px;
-            color: #ffffff; line-height: 1.15; white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis;
-        }
-
-        .brand-tagline {
-            font-size: 0.54rem; color: var(--gold); font-weight: 700;
-            letter-spacing: 0.3px; text-transform: uppercase; white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis;
-        }
-
-        .stats-group {
-            display: flex; align-items: center; gap: 6px; flex-shrink: 0;
-        }
-
-        .stat-box {
-            border-left: 2px solid var(--gold);
-            padding-left: 8px; text-align: left;
-        }
-        .stat-val {
-            font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 900;
-            color: #fff; line-height: 1; text-shadow: 0 0 12px var(--gold-glow);
-        }
-        .stat-label { font-size: 0.58rem; opacity: 0.75; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
-
-        .timer-val {
-            font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800;
-            color: var(--gold); background: rgba(212, 175, 55, 0.15);
-            padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.3);
-            white-space: nowrap;
-        }
-
         @media (min-width: 540px) {
             .ui-layer { padding: 20px 24px; }
-            .header { padding: 14px 18px; border-radius: 16px; gap: 16px; }
-            .brand-pill { gap: 12px; }
-            .brand-icon { width: 40px; height: 40px; border-radius: 10px; }
-            .brand-name { font-size: 1.05rem; }
-            .brand-tagline { font-size: 0.7rem; }
-            .stats-group { gap: 18px; }
-            .stat-box { padding-left: 12px; border-left-width: 3px; }
-            .stat-val { font-size: 1.85rem; }
-            .stat-label { font-size: 0.68rem; }
-            .timer-val { font-size: 1.65rem; padding: 8px 16px; border-radius: 12px; }
         }
 
         .vault-panel {
@@ -218,22 +150,6 @@
         <canvas id="game_canvas"></canvas>
 
         <div class="ui-overlay">
-            <div class="header">
-                <div class="brand-pill">
-                    <img src="../../brand/sampath-punkalasa.png" class="brand-icon" alt="Sampath Bank">
-                    <div>
-                        <div class="brand-name">Sampath Vishwa</div>
-                        <div class="brand-tagline">e-FD Wealth Rain</div>
-                    </div>
-                </div>
-                <div class="stats-group">
-                    <div class="stat-box">
-                        <div class="stat-label">SAVINGS</div>
-                        <div id="scoreLabel" class="stat-val">LKR 0</div>
-                    </div>
-                    <div class="timer-val" id="timerLabel">00:45</div>
-                </div>
-            </div>
 
             <div class="vault-panel">
                 <div class="vault-title">
