@@ -48,55 +48,58 @@
         .hud-overlay {
             position: absolute; inset: 0; pointer-events: none; z-index: 10;
             display: flex; flex-direction: column; justify-content: space-between;
-            padding: 24px 30px;
+            padding: 10px 12px; box-sizing: border-box;
         }
 
         .header {
             display: flex; justify-content: space-between; align-items: center;
-            background: linear-gradient(180deg, rgba(5,11,24,0.92) 0%, rgba(5,11,24,0.4) 70%, transparent 100%);
-            padding: 16px 20px; border-radius: 16px;
+            background: linear-gradient(180deg, rgba(5,11,24,0.94) 0%, rgba(5,11,24,0.75) 100%);
+            padding: 8px 12px; border-radius: 14px;
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-glass);
-            pointer-events: auto;
+            pointer-events: auto; width: 100%; box-sizing: border-box;
+            gap: 8px;
         }
 
         .brand-pill {
-            display: flex; align-items: center; gap: 12px;
+            display: flex; align-items: center; gap: 8px;
+            min-width: 0; flex-shrink: 1;
         }
 
         .brand-icon {
-            width: 42px; height: 42px; border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(243, 112, 33, 0.35);
+            width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(243, 112, 33, 0.35);
         }
 
         .brand-name {
             font-family: 'Outfit', sans-serif; font-weight: 800;
-            font-size: 1.1rem; color: #ffffff; line-height: 1.2;
+            font-size: 0.82rem; letter-spacing: 0.3px;
+            color: #ffffff; line-height: 1.15; white-space: nowrap;
         }
 
         .brand-tagline {
-            font-size: 0.72rem; color: var(--cyber-blue); font-weight: 600;
-            letter-spacing: 1px; text-transform: uppercase;
+            font-size: 0.58rem; color: var(--cyber-blue); font-weight: 700;
+            letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;
         }
 
         .stats-group {
-            display: flex; align-items: center; gap: 20px;
+            display: flex; align-items: center; gap: 8px; flex-shrink: 0;
         }
 
         .shield-meter-wrap {
             text-align: right;
         }
         .shield-meter-label {
-            font-size: 0.68rem; letter-spacing: 1.5px; opacity: 0.75;
-            text-transform: uppercase; margin-bottom: 4px;
+            font-size: 0.58rem; letter-spacing: 1px; opacity: 0.75;
+            text-transform: uppercase; margin-bottom: 2px;
         }
         .shield-meter {
-            display: flex; gap: 8px; justify-content: flex-end;
+            display: flex; gap: 5px; justify-content: flex-end;
         }
         .shield-dot {
-            width: 18px; height: 18px; border-radius: 50%;
+            width: 12px; height: 12px; border-radius: 50%;
             background: var(--sampath-orange);
-            box-shadow: 0 0 10px var(--sampath-orange);
+            box-shadow: 0 0 8px var(--sampath-orange);
             transition: all 0.3s;
         }
         .shield-lost {
@@ -104,15 +107,31 @@
         }
 
         .security-badge {
-            border: 1.5px solid var(--cyber-blue); padding: 8px 16px;
-            background: rgba(0, 242, 255, 0.08); border-radius: 12px;
-            text-align: center;
+            border: 1.5px solid var(--cyber-blue); padding: 5px 10px;
+            background: rgba(0, 242, 255, 0.08); border-radius: 10px;
+            text-align: center; white-space: nowrap;
         }
-        .badge-lbl { font-size: 0.65rem; opacity: 0.8; letter-spacing: 1px; }
+        .badge-lbl { font-size: 0.58rem; opacity: 0.8; letter-spacing: 0.5px; }
         .badge-val {
-            font-family: 'Outfit', sans-serif; font-size: 1.5rem;
+            font-family: 'Outfit', sans-serif; font-size: 1.15rem;
             font-weight: 900; color: var(--cyber-blue);
-            text-shadow: 0 0 12px var(--cyber-blue-glow);
+            text-shadow: 0 0 10px var(--cyber-blue-glow);
+            line-height: 1;
+        }
+
+        @media (min-width: 540px) {
+            .ui-layer { padding: 20px 24px; }
+            .header { padding: 14px 18px; border-radius: 16px; gap: 16px; }
+            .brand-pill { gap: 12px; }
+            .brand-icon { width: 40px; height: 40px; border-radius: 10px; }
+            .brand-name { font-size: 1.05rem; }
+            .brand-tagline { font-size: 0.7rem; }
+            .stats-group { gap: 18px; }
+            .shield-meter-label { font-size: 0.68rem; }
+            .shield-dot { width: 16px; height: 16px; }
+            .security-badge { padding: 8px 16px; border-radius: 12px; }
+            .badge-lbl { font-size: 0.65rem; }
+            .badge-val { font-size: 1.5rem; }
         }
 
         .screen {
@@ -179,7 +198,7 @@
         <div class="hud-overlay">
             <div class="header">
                 <div class="brand-pill">
-                    <img src="/brand/sampath-punkalasa.png" class="brand-icon" alt="Sampath Bank">
+                    <img src="../../brand/sampath-punkalasa.png" class="brand-icon" alt="Sampath Bank">
                     <div>
                         <div class="brand-name">Sampath Vishwa</div>
                         <div class="brand-tagline">Cyber Shield Security</div>
@@ -205,7 +224,7 @@
         </div>
 
         <div id="startScreen" class="screen">
-            <img src="/brand/vishwa-logo.png" alt="Sampath Vishwa" class="game-logo-large">
+            <img src="../../brand/vishwa-logo.png" alt="Sampath Vishwa" class="game-logo-large">
             <div class="badge-kiosk">🛡 Full-Body Pose & Arm Shield</div>
             <h1 class="screen-title">Biometric <span>Defense</span></h1>
             <p class="screen-desc">
@@ -229,7 +248,7 @@
         </div>
 
         <div id="gameOverScreen" class="screen hidden">
-            <img src="/brand/sampath-punkalasa.png" alt="Sampath Vishwa" style="width: 72px; height: 72px; margin-bottom: 16px;">
+            <img src="../../brand/sampath-punkalasa.png" alt="Sampath Vishwa" style="width: 72px; height: 72px; margin-bottom: 16px;">
             <div class="badge-kiosk" style="border-color: rgba(255, 62, 62, 0.4); color: var(--danger-red); background: rgba(255, 62, 62, 0.1);">Security Assessment Finished</div>
             <h1 class="screen-title" style="color: var(--cyber-blue);">Account Secured!</h1>
             <p class="screen-desc">Sampath Vishwa safeguards your financial identity 24/7.</p>
