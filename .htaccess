@@ -22,6 +22,9 @@
   Header always set X-Content-Type-Options "nosniff"
 </IfModule>
 
+# Default index file
+DirectoryIndex index.html index.php
+
 # Prevent directory indexing
 Options -Indexes
 

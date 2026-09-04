@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sampath Vishwa - AR Hover & Settle</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --sampath-orange: #f37021;
+            --sampath-orange-glow: rgba(243, 112, 33, 0.45);
+            --deep-navy: #050b18;
+            --gold: #d4af37;
+            --surface-glass: rgba(10, 20, 42, 0.75);
+            --border-glass: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #030712; color: white;
+            font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        #app-container {
+            position: relative;
+            width: 100%; height: 100%;
+            max-width: 100vw; max-height: 100vh;
+            background: var(--deep-navy);
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        video { display: none; }
+        canvas {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 24px 30px;
+        }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(180deg, rgba(5,11,24,0.92) 0%, rgba(5,11,24,0.4) 70%, transparent 100%);
+            padding: 16px 20px; border-radius: 16px;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            pointer-events: auto;
+        }
+
+        .brand-pill {
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .brand-icon {
+            width: 42px; height: 42px; border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(243, 112, 33, 0.35);
+        }
+
+        .brand-name {
+            font-family: 'Outfit', sans-serif; font-weight: 800;
+            font-size: 1.1rem; letter-spacing: 0.5px;
+            color: #ffffff; line-height: 1.2;
+        }
+
+        .brand-tagline {
+            font-size: 0.72rem; color: var(--sampath-orange); font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        .stats-group {
+            display: flex; align-items: center; gap: 24px;
+        }
+
+        .score-box {
+            border-left: 3px solid var(--sampath-orange);
+            padding-left: 14px; text-align: left;
+        }
+        .score-val {
+            font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900;
+            color: #fff; text-shadow: 0 0 15px var(--sampath-orange-glow);
+            line-height: 1;
+        }
+        .stat-label { font-size: 0.7rem; opacity: 0.75; letter-spacing: 1.5px; text-transform: uppercase; }
+
+        .timer-box {
+            font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800;
+            color: var(--gold); background: rgba(212, 175, 55, 0.12);
+            padding: 8px 18px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3);
+            letter-spacing: 1px;
+        }
+
+        .overlay-screen {
+            position: absolute; inset: 0; background: rgba(3, 7, 18, 0.94);
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; padding: 32px; z-index: 100;
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay-screen.hidden { display: none !important; }
+
+        .game-logo-large {
+            max-width: 220px; height: auto; margin-bottom: 20px;
+            filter: drop-shadow(0 10px 25px rgba(243, 112, 33, 0.3));
+        }
+
+        .badge-kiosk {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(243, 112, 33, 0.15); border: 1px solid rgba(243, 112, 33, 0.4);
+            color: #ff9800; padding: 6px 16px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; margin-bottom: 16px;
+        }
+
+        .screen-title {
+            font-family: 'Outfit', sans-serif; font-size: 2.6rem; font-weight: 900;
+            color: #ffffff; margin: 0 0 10px 0; letter-spacing: -0.5px;
+        }
+        .screen-title span { color: var(--sampath-orange); }
+
+        .screen-desc {
+            font-size: 1.05rem; opacity: 0.85; max-width: 440px; line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .tips-list {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-glass);
+            border-radius: 14px; padding: 14px 20px; margin-bottom: 28px;
+            text-align: left; max-width: 380px; width: 100%;
+        }
+        .tips-item {
+            display: flex; align-items: center; gap: 10px; font-size: 0.88rem;
+            color: #cbd5e1; margin-bottom: 8px;
+        }
+        .tips-item:last-child { margin-bottom: 0; }
+        .tips-item span { color: var(--sampath-orange); font-size: 1.1rem; }
+
+        .btn-start {
+            background: linear-gradient(135deg, #f37021 0%, #ff8c42 100%);
+            color: white; border: none; padding: 18px 52px; font-size: 1.25rem;
+            font-weight: 800; font-family: 'Outfit', sans-serif;
+            border-radius: 50px; cursor: pointer;
+            box-shadow: 0 10px 30px var(--sampath-orange-glow);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.5px;
+        }
+        .btn-start:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 15px 40px rgba(243, 112, 33, 0.6);
+        }
+        .btn-start:active { transform: translateY(1px) scale(0.98); }
+
+        .camera-hint {
+            margin-top: 20px; font-size: 0.78rem; opacity: 0.6;
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .camera-hint::before {
+            content: ''; width: 8px; height: 8px; border-radius: 50%;
+            background: #00ff88; box-shadow: 0 0 8px #00ff88;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="ui-layer">
+            <div class="header">
+                <div class="brand-pill">
+                    <img src="/brand/sampath-punkalasa.png" class="brand-icon" alt="Sampath Bank">
+                    <div>
+                        <div class="brand-name">Sampath Vishwa</div>
+                        <div class="brand-tagline">Utility Settlement AR</div>
+                    </div>
+                </div>
+                <div class="stats-group">
+                    <div class="score-box">
+                        <div class="stat-label">POINTS</div>
+                        <div id="scoreLabel" class="score-val">0000</div>
+                    </div>
+                    <div class="timer-box" id="timerLabel">00:30</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="startScreen" class="overlay-screen">
+            <img src="/brand/vishwa-logo.png" alt="Sampath Vishwa" class="game-logo-large">
+            <div class="badge-kiosk">🖐 Hand Motion Tracking</div>
+            <h1 class="screen-title">Swipe & <span>Settle</span></h1>
+            <p class="screen-desc">
+                Utility bills are floating in your AR space! Grab them with your finger and swipe down into the <b>Vishwa QuickPay</b> drop zone.
+            </p>
+
+            <div class="tips-list">
+                <div class="tips-item"><span>•</span> Raise your hand towards the camera</div>
+                <div class="tips-item"><span>•</span> Pinch or touch a bill to grab it</div>
+                <div class="tips-item"><span>•</span> Drag down into the virtual phone to pay instantly</div>
+            </div>
+
+            <button class="btn-start" onclick="startGame()">START EXPERIENCE</button>
+            <div class="camera-hint">Requires camera access for gesture interaction</div>
+        </div>
+
+        <div id="gameOverScreen" class="overlay-screen hidden">
+            <img src="/brand/sampath-punkalasa.png" alt="Sampath Vishwa" style="width: 72px; height: 72px; margin-bottom: 16px;">
+            <div class="badge-kiosk" style="border-color: rgba(212, 175, 55, 0.4); color: var(--gold); background: rgba(212, 175, 55, 0.1);">Session Completed</div>
+            <h1 class="screen-title" style="color: var(--gold); margin-bottom: 4px;">Bills Settled!</h1>
+            <p class="screen-desc">All bills cleared in seconds with Sampath Vishwa online banking.</p>
+            
+            <div style="font-size: 0.85rem; letter-spacing: 2px; opacity: 0.7; margin-top: 10px;">FINAL SCORE</div>
+            <div style="font-family: 'Outfit', sans-serif; font-size: 4.5rem; font-weight: 900; color: white; line-height: 1.1; text-shadow: 0 0 30px var(--sampath-orange-glow);" id="finalScore">0</div>
+            
+            <button class="btn-start" onclick="location.reload()" style="margin-top: 24px;">PLAY AGAIN</button>
+        </div>
+    </div>
+
+<script>
+    const GAME_ID = 'swipe-settle';
+    const videoElement = document.getElementById('webcam');
+    const canvasElement = document.getElementById('gameCanvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    
+    let score = 0;
+    let timeLeft = 30;
+    let gameActive = false;
+    let bills = [];
+    let handPos = { x: 0, y: 0, active: false };
+    let grabbedBill = null;
+    let timerInterval;
+    let isMuted = false;
+
+    const BILL_TYPES = [
+        { label: 'CEB ELECTRICITY', color: '#ffaa00', icon: '⚡' },
+        { label: 'WATER BOARD', color: '#00b4d8', icon: '💧' },
+        { label: 'DIALOG MOBILE', color: '#e63946', icon: '📱' },
+        { label: 'SLT FIBRE', color: '#06d6a0', icon: '🌐' }
+    ];
+
+    // Audio Setup
+    let audioCtx = null;
+    function getAudioContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return audioCtx;
+    }
+
+    function playSfx() {
+        if (isMuted) return;
+        try {
+            const ctx = getAudioContext();
+            if (ctx.state === 'suspended') ctx.resume();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(580, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1250, ctx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.22);
+            osc.start(); osc.stop(ctx.currentTime + 0.22);
+        } catch (e) { console.warn(e); }
+    }
+
+    // MediaPipe Hands
+    const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+    hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6 });
+    hands.onResults(results => {
+        handPos.active = false;
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+            const tip = results.multiHandLandmarks[0][8]; // Index Finger Tip
+            handPos.x = tip.x * canvasElement.width;
+            handPos.y = tip.y * canvasElement.height;
+            handPos.active = true;
+        }
+        draw();
+    });
+
+    const camera = new Camera(videoElement, {
+        onFrame: async () => {
+            if (videoElement.videoWidth > 0) {
+                await hands.send({ image: videoElement });
+            }
+        },
+        width: 1280, height: 720
+    });
+    camera.start().catch(err => console.warn("Camera init:", err));
+
+    function startGame() {
+        getAudioContext();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        document.getElementById('startScreen').classList.add('hidden');
+        gameActive = true;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timerLabel').innerText = `00:${timeLeft.toString().padStart(2, '0')}`;
+            if (timeLeft <= 0) endGame();
+        }, 1000);
+    }
+
+    function endGame() {
+        gameActive = false;
+        clearInterval(timerInterval);
+        document.getElementById('gameOverScreen').classList.remove('hidden');
+        document.getElementById('finalScore').innerText = score;
+        
+        // Notify parent window
+        window.parent.postMessage({
+            type: 'GAME_OVER',
+            gameId: GAME_ID,
+            score: score,
+            title: 'AR Swipe & Settle'
+        }, '*');
+    }
+
+    function spawnBill() {
+        if (!gameActive || bills.length >= 6) return;
+        const type = BILL_TYPES[Math.floor(Math.random() * BILL_TYPES.length)];
+        bills.push({
+            id: Date.now() + Math.random(),
+            baseX: 120 + Math.random() * Math.max(100, canvasElement.width - 240),
+            baseY: 100 + Math.random() * Math.max(80, canvasElement.height / 2 - 50),
+            x: 0, y: 0,
+            angle: Math.random() * Math.PI * 2,
+            floatSpeed: 0.02 + Math.random() * 0.02,
+            type: type,
+            grabbed: false
+        });
+    }
+
+    setInterval(spawnBill, 1100);
+
+    function draw() {
+        if (canvasElement.width !== canvasElement.clientWidth || canvasElement.height !== canvasElement.clientHeight) {
+            canvasElement.width = canvasElement.clientWidth;
+            canvasElement.height = canvasElement.clientHeight;
+        }
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        
+        // 1. Mirror Background Video
+        canvasCtx.scale(-1, 1);
+        canvasCtx.translate(-canvasElement.width, 0);
+        canvasCtx.globalAlpha = 0.65;
+        if (videoElement.videoWidth > 0) {
+            canvasCtx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+        } else {
+            // Placeholder ambient glow if camera warming up
+            canvasCtx.fillStyle = '#0a1329';
+            canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+        }
+        canvasCtx.restore();
+
+        // 2. HUD Phone Drop Zone (Vishwa QuickPay)
+        const phoneW = Math.min(360, canvasElement.width * 0.7);
+        const phoneH = 340;
+        const phoneY = canvasElement.height - 240;
+        const phoneX = canvasElement.width / 2 - phoneW / 2;
+        
+        // Draw Phone
+        canvasCtx.save();
+        canvasCtx.shadowBlur = 30; canvasCtx.shadowColor = 'rgba(243, 112, 33, 0.35)';
+        canvasCtx.fillStyle = 'rgba(5, 11, 24, 0.88)';
+        canvasCtx.beginPath();
+        if (canvasCtx.roundRect) {
+            canvasCtx.roundRect(phoneX, phoneY, phoneW, phoneH, 36);
+        } else {
+            canvasCtx.rect(phoneX, phoneY, phoneW, phoneH);
+        }
+        canvasCtx.fill();
+        canvasCtx.strokeStyle = '#f37021';
+        canvasCtx.lineWidth = 3;
+        canvasCtx.stroke();
+        
+        // Notch indicator
+        canvasCtx.fillStyle = '#f37021';
+        canvasCtx.beginPath();
+        if (canvasCtx.roundRect) {
+            canvasCtx.roundRect(canvasElement.width / 2 - 30, phoneY + 12, 60, 6, 3);
+        } else {
+            canvasCtx.rect(canvasElement.width / 2 - 30, phoneY + 12, 60, 6);
+        }
+        canvasCtx.fill();
+
+        canvasCtx.fillStyle = 'white';
+        canvasCtx.font = 'bold 20px "Outfit", sans-serif';
+        canvasCtx.textAlign = 'center';
+        canvasCtx.fillText("VISHWA QUICKPAY", phoneX + phoneW / 2, phoneY + 56);
+        canvasCtx.font = '12px "Plus Jakarta Sans", sans-serif';
+        canvasCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        canvasCtx.fillText("SWIPE BILLS HERE TO INSTANTLY SETTLE", phoneX + phoneW / 2, phoneY + 82);
+        canvasCtx.restore();
+
+        // 3. Draw Hovering Bills
+        bills.forEach((bill, index) => {
+            if (!bill.grabbed) {
+                bill.angle += bill.floatSpeed;
+                bill.x = bill.baseX + Math.sin(bill.angle) * 35;
+                bill.y = bill.baseY + Math.cos(bill.angle * 0.8) * 25;
+
+                // Grab Detection (Mirror hand X)
+                if (handPos.active && !grabbedBill) {
+                    const hX = canvasElement.width - handPos.x;
+                    const dist = Math.hypot(hX - bill.x, handPos.y - bill.y);
+                    if (dist < 90) {
+                        bill.grabbed = true;
+                        grabbedBill = bill;
+                    }
+                }
+            } else {
+                // Stick to Hand
+                bill.x = canvasElement.width - handPos.x;
+                bill.y = handPos.y;
+
+                // Settlement Logic
+                if (bill.y > phoneY && bill.x > phoneX && bill.x < phoneX + phoneW) {
+                    score += 100;
+                    document.getElementById('scoreLabel').innerText = score.toString().padStart(4, '0');
+                    playSfx();
+                    window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: score }, '*');
+                    bills.splice(index, 1);
+                    grabbedBill = null;
+                    return;
+                }
+                
+                // Release if hand lost
+                if (!handPos.active) {
+                    bill.grabbed = false;
+                    bill.baseX = bill.x; bill.baseY = bill.y;
+                    grabbedBill = null;
+                }
+            }
+
+            // Render Bill Graphic
+            canvasCtx.save();
+            canvasCtx.shadowBlur = 25; canvasCtx.shadowColor = 'rgba(0,0,0,0.6)';
+            canvasCtx.fillStyle = '#ffffff';
+            canvasCtx.beginPath();
+            const bw = 170, bh = 95;
+            if (canvasCtx.roundRect) {
+                canvasCtx.roundRect(bill.x - bw/2, bill.y - bh/2, bw, bh, 14);
+            } else {
+                canvasCtx.rect(bill.x - bw/2, bill.y - bh/2, bw, bh);
+            }
+            canvasCtx.fill();
+            
+            // Accent Color Banner
+            canvasCtx.fillStyle = bill.type.color;
+            if (canvasCtx.roundRect) {
+                canvasCtx.beginPath();
+                canvasCtx.roundRect(bill.x - bw/2, bill.y - 8, bw, 32, [0, 0, 14, 14]);
+                canvasCtx.fill();
+            } else {
+                canvasCtx.fillRect(bill.x - bw/2, bill.y - 8, bw, 32);
+            }
+            
+            canvasCtx.fillStyle = '#0f172a';
+            canvasCtx.font = 'bold 13px "Outfit", sans-serif';
+            canvasCtx.textAlign = 'center';
+            canvasCtx.fillText(bill.type.label, bill.x, bill.y - 20);
+            
+            canvasCtx.font = 'bold 15px "Outfit", sans-serif';
+            canvasCtx.fillStyle = 'white';
+            canvasCtx.fillText(bill.type.icon + " PAY NOW", bill.x, bill.y + 14);
+            canvasCtx.restore();
+        });
+
+        // 4. Hand Cursor (Glowing Trail)
+        if (handPos.active) {
+            const hX = canvasElement.width - handPos.x;
+            canvasCtx.beginPath();
+            const g = canvasCtx.createRadialGradient(hX, handPos.y, 0, hX, handPos.y, 50);
+            g.addColorStop(0, 'rgba(243, 112, 33, 0.95)');
+            g.addColorStop(0.5, 'rgba(243, 112, 33, 0.4)');
+            g.addColorStop(1, 'rgba(243, 112, 33, 0)');
+            canvasCtx.fillStyle = g;
+            canvasCtx.arc(hX, handPos.y, 50, 0, Math.PI * 2);
+            canvasCtx.fill();
+            
+            canvasCtx.fillStyle = '#ffffff';
+            canvasCtx.beginPath();
+            canvasCtx.arc(hX, handPos.y, 10, 0, Math.PI * 2);
+            canvasCtx.fill();
+        }
+    }
+
+    // Platform parent message handling
+    window.addEventListener('message', (e) => {
+        if (!e.data) return;
+        if (e.data.type === 'RESTART_GAME') {
+            location.reload();
+        } else if (e.data.type === 'TOGGLE_MUTE') {
+            isMuted = !!e.data.isMuted;
+        }
+    });
+</script>
+</body>
+</html>
