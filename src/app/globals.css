@@ -297,6 +297,7 @@ button, a, input, select {
 
 .theater-stage-container {
   flex: 1;
+  min-height: 0;
   width: 100%;
   display: flex;
   align-items: center;

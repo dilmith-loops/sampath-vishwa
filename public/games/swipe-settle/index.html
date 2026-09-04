@@ -120,53 +120,58 @@
 
         .overlay-screen {
             position: absolute; inset: 0; background: rgba(3, 7, 18, 0.94);
-            display: flex; flex-direction: column; justify-content: center;
-            align-items: center; text-align: center; padding: 32px; z-index: 100;
+            display: flex; flex-direction: column;
+            align-items: center; text-align: center; padding: 16px 18px; z-index: 100;
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             transition: opacity 0.3s ease;
+            overflow-y: auto; overflow-x: hidden; box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
         }
+
+        .overlay-screen > *:first-child { margin-top: auto; }
+        .overlay-screen > *:last-child { margin-bottom: auto; }
 
         .overlay-screen.hidden { display: none !important; }
 
         .game-logo-large {
-            max-width: 220px; height: auto; margin-bottom: 20px;
-            filter: drop-shadow(0 10px 25px rgba(243, 112, 33, 0.3));
+            max-width: 140px; height: auto; margin-bottom: 8px;
+            filter: drop-shadow(0 8px 20px rgba(243, 112, 33, 0.3));
         }
 
         .badge-kiosk {
-            display: inline-flex; align-items: center; gap: 8px;
+            display: inline-flex; align-items: center; gap: 6px;
             background: rgba(243, 112, 33, 0.15); border: 1px solid rgba(243, 112, 33, 0.4);
-            color: #ff9800; padding: 6px 16px; border-radius: 20px;
-            font-size: 0.8rem; font-weight: 700; letter-spacing: 1px;
-            text-transform: uppercase; margin-bottom: 16px;
+            color: #ff9800; padding: 4px 12px; border-radius: 20px;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.8px;
+            text-transform: uppercase; margin-bottom: 8px;
         }
 
         .screen-title {
-            font-family: 'Outfit', sans-serif; font-size: 2.6rem; font-weight: 900;
-            color: #ffffff; margin: 0 0 10px 0; letter-spacing: -0.5px;
+            font-family: 'Outfit', sans-serif; font-size: clamp(1.6rem, 5vw, 2.1rem); font-weight: 900;
+            color: #ffffff; margin: 0 0 6px 0; letter-spacing: -0.5px; line-height: 1.1;
         }
         .screen-title span { color: var(--sampath-orange); }
 
         .screen-desc {
-            font-size: 1.05rem; opacity: 0.85; max-width: 440px; line-height: 1.6;
-            margin-bottom: 24px;
+            font-size: clamp(0.82rem, 2.5vw, 0.92rem); opacity: 0.85; max-width: 360px; line-height: 1.4;
+            margin-bottom: 12px;
         }
 
         .tips-list {
             background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-glass);
-            border-radius: 14px; padding: 14px 20px; margin-bottom: 28px;
-            text-align: left; max-width: 380px; width: 100%;
+            border-radius: 12px; padding: 10px 16px; margin-bottom: 14px;
+            text-align: left; max-width: 340px; width: 100%; box-sizing: border-box;
         }
         .tips-item {
-            display: flex; align-items: center; gap: 10px; font-size: 0.88rem;
-            color: #cbd5e1; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 8px; font-size: 0.8rem;
+            color: #cbd5e1; margin-bottom: 5px; line-height: 1.3;
         }
         .tips-item:last-child { margin-bottom: 0; }
-        .tips-item span { color: var(--sampath-orange); font-size: 1.1rem; }
+        .tips-item span { color: var(--sampath-orange); font-size: 0.95rem; }
 
         .btn-start {
             background: linear-gradient(135deg, #f37021 0%, #ff8c42 100%);
-            color: white; border: none; padding: 18px 52px; font-size: 1.25rem;
+            color: white; border: none; padding: 13px 38px; font-size: 1.05rem;
             font-weight: 800; font-family: 'Outfit', sans-serif;
             border-radius: 50px; cursor: pointer;
             box-shadow: 0 10px 30px var(--sampath-orange-glow);
@@ -180,12 +185,12 @@
         .btn-start:active { transform: translateY(1px) scale(0.98); }
 
         .camera-hint {
-            margin-top: 20px; font-size: 0.78rem; opacity: 0.6;
+            margin-top: 10px; font-size: 0.72rem; opacity: 0.6;
             display: flex; align-items: center; gap: 6px;
         }
 
         .camera-hint::before {
-            content: ''; width: 8px; height: 8px; border-radius: 50%;
+            content: ''; width: 6px; height: 6px; border-radius: 50%;
             background: #00ff88; box-shadow: 0 0 8px #00ff88;
         }
     </style>
@@ -234,15 +239,15 @@
         </div>
 
         <div id="gameOverScreen" class="overlay-screen hidden">
-            <img src="../../brand/sampath-punkalasa.png" alt="Sampath Vishwa" style="width: 72px; height: 72px; margin-bottom: 16px;">
-            <div class="badge-kiosk" style="border-color: rgba(212, 175, 55, 0.4); color: var(--gold); background: rgba(212, 175, 55, 0.1);">Session Completed</div>
+            <img src="../../brand/sampath-punkalasa.png" alt="Sampath Vishwa" style="width: 50px; height: 50px; margin-bottom: 10px;">
+            <div class="badge-kiosk" style="border-color: rgba(212, 175, 55, 0.4); color: var(--gold); background: rgba(212, 175, 55, 0.1); margin-bottom: 6px;">Session Completed</div>
             <h1 class="screen-title" style="color: var(--gold); margin-bottom: 4px;">Bills Settled!</h1>
-            <p class="screen-desc">All bills cleared in seconds with Sampath Vishwa online banking.</p>
+            <p class="screen-desc" style="margin-bottom: 10px;">All bills cleared in seconds with Sampath Vishwa online banking.</p>
             
-            <div style="font-size: 0.85rem; letter-spacing: 2px; opacity: 0.7; margin-top: 10px;">FINAL SCORE</div>
-            <div style="font-family: 'Outfit', sans-serif; font-size: 4.5rem; font-weight: 900; color: white; line-height: 1.1; text-shadow: 0 0 30px var(--sampath-orange-glow);" id="finalScore">0</div>
+            <div style="font-size: 0.75rem; letter-spacing: 2px; opacity: 0.7; margin-top: 6px;">FINAL SCORE</div>
+            <div style="font-family: 'Outfit', sans-serif; font-size: clamp(2.8rem, 8vw, 3.8rem); font-weight: 900; color: white; line-height: 1.1; text-shadow: 0 0 30px var(--sampath-orange-glow);" id="finalScore">0</div>
             
-            <button class="btn-start" onclick="location.reload()" style="margin-top: 24px;">PLAY AGAIN</button>
+            <button class="btn-start" onclick="location.reload()" style="margin-top: 14px;">PLAY AGAIN</button>
         </div>
     </div>
 

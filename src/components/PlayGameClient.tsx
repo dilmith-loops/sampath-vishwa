@@ -115,7 +115,8 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
         <div className="theater-frame" style={{
           width: '100%',
           height: '100%',
-          maxWidth: 'calc((100vh - 80px) * 9 / 16)',
+          maxHeight: '100%',
+          maxWidth: 'calc((100vh - 100px) * 9 / 16)',
           aspectRatio: '9 / 16',
           borderRadius: '20px',
         }}>

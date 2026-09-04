@@ -208,26 +208,11 @@ export default function GameTheaterModal({
         <div className="theater-frame" style={{
           width: isKioskRatio ? 'auto' : '100%',
           height: '100%',
+          maxHeight: '100%',
           aspectRatio: isKioskRatio ? '9 / 16' : 'auto',
-          maxWidth: isKioskRatio ? 'calc((100vh - 110px) * 9 / 16)' : '1400px',
-          maxHeight: 'calc(100vh - 80px)',
+          maxWidth: isKioskRatio ? 'calc((100vh - 120px) * 9 / 16)' : '1400px',
           borderRadius: isKioskRatio ? '20px' : '16px',
         }}>
-          {/* Top Notch for Kiosk Feel */}
-          {isKioskRatio && (
-            <div className="hide-on-mobile" style={{
-              position: 'absolute',
-              top: 8,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '80px',
-              height: '4px',
-              background: 'rgba(255, 255, 255, 0.25)',
-              borderRadius: '3px',
-              zIndex: 20,
-              pointerEvents: 'none'
-            }} />
-          )}
 
           <iframe
             ref={iframeRef}
