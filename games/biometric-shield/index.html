@@ -47,8 +47,13 @@
 
         .hud-overlay {
             position: absolute; inset: 0; pointer-events: none; z-index: 10;
-            display: flex; flex-direction: column; justify-content: flex-end;
-            padding: 8px 10px; box-sizing: border-box;
+            display: flex; flex-direction: column; justify-content: flex-start;
+            align-items: center;
+            padding: 14px 16px; box-sizing: border-box;
+        }
+
+        body.in-iframe .hud-overlay {
+            display: none !important;
         }
 
         .shield-meter-wrap {
@@ -280,13 +285,20 @@
     try {
         window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: '01:00' }, '*');
         window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: 0 }, '*');
+        window.parent.postMessage({ type: 'GAME_LIVES_UPDATE', gameId: GAME_ID, lives: lives, maxLives: 3 }, '*');
     } catch(e){}
+
+    if (window.self !== window.top) {
+        document.body.classList.add('in-iframe');
+    }
 
     function startGame() {
         getAudioContext();
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         document.getElementById('startScreen').classList.add('hidden');
         gameActive = true;
+        lives = 3;
+        updateShieldUI();
         playSound(700, 'sine', 0.4);
         timeLeft = 60;
         window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: '01:00' }, '*');
@@ -810,13 +822,17 @@
 
     function updateShieldUI() {
         const dots = document.querySelectorAll('.shield-dot');
-        if (!dots || dots.length === 0) return;
-        for (let i = 0; i < dots.length; i++) {
-            if (dots[i]) {
-                if (i >= lives) dots[i].classList.add('shield-lost');
-                else dots[i].classList.remove('shield-lost');
+        if (dots && dots.length > 0) {
+            for (let i = 0; i < dots.length; i++) {
+                if (dots[i]) {
+                    if (i >= lives) dots[i].classList.add('shield-lost');
+                    else dots[i].classList.remove('shield-lost');
+                }
             }
         }
+        try {
+            window.parent.postMessage({ type: 'GAME_LIVES_UPDATE', gameId: GAME_ID, lives: lives, maxLives: 3 }, '*');
+        } catch(e){}
     }
 
     function endGame() {
