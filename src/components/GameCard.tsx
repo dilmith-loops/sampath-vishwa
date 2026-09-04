@@ -130,11 +130,11 @@ export default function GameCard({
 
         {/* Description */}
         <p style={{
-          fontSize: '0.92rem',
-          color: '#cbd5e1',
-          lineHeight: 1.6,
-          marginBottom: '20px',
-          minHeight: '72px'
+          fontSize: '0.88rem',
+          color: '#94a3b8',
+          lineHeight: 1.5,
+          marginBottom: '16px',
+          minHeight: '40px'
         }}>
           {game.description}
         </p>
