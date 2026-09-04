@@ -31,57 +31,36 @@ export default function LeaderboardModal({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9998,
-        background: 'rgba(3, 7, 18, 0.88)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px'
-      }}
+      className="modal-overlay"
       onClick={onClose}
     >
       <div
-        style={{
-          width: '100%',
-          maxWidth: '680px',
-          background: 'linear-gradient(180deg, #0a1329 0%, #050b18 100%)',
-          border: '1px solid rgba(243, 112, 33, 0.35)',
-          borderRadius: '28px',
-          padding: '32px',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(243, 112, 33, 0.2)',
-          maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
+        className="modal-card"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
-              width: 52,
-              height: 52,
-              borderRadius: 14,
+              width: 44,
+              height: 44,
+              borderRadius: 12,
               background: 'rgba(243, 112, 33, 0.15)',
               border: '1px solid #f37021',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 20px rgba(243, 112, 33, 0.3)'
+              boxShadow: '0 0 20px rgba(243, 112, 33, 0.3)',
+              flexShrink: 0
             }}>
-              <Trophy size={26} color="#d4af37" />
+              <Trophy size={22} color="#d4af37" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
+              <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
                 Sampath Vishwa <span style={{ color: '#f37021' }}>Hall of Fame</span>
               </h2>
-              <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                Top Kiosk Scores & Digital Banking Champions
+              <div style={{ fontSize: '0.76rem', color: '#94a3b8' }}>
+                Top Kiosk Scores & Champions
               </div>
             </div>
           </div>
@@ -92,16 +71,17 @@ export default function LeaderboardModal({
               background: 'rgba(255, 255, 255, 0.06)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '50%',
-              width: 38,
-              height: 38,
+              width: 36,
+              height: 36,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#cbd5e1',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flexShrink: 0
             }}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
@@ -110,13 +90,15 @@ export default function LeaderboardModal({
           className="no-scrollbar"
           style={{
             display: 'flex',
-            flexWrap: 'wrap',
+            overflowX: 'auto',
+            flexWrap: 'nowrap',
+            WebkitOverflowScrolling: 'touch',
             gap: '6px',
             background: 'rgba(255, 255, 255, 0.04)',
             padding: '6px',
             borderRadius: '16px',
             border: '1px solid rgba(255, 255, 255, 0.08)',
-            marginBottom: '20px',
+            marginBottom: '18px',
             alignItems: 'center'
           }}
         >

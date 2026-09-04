@@ -1,7 +1,15 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 import { withBasePath } from '@/utils/paths';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
+  themeColor: '#050b18',
+};
 
 export const metadata: Metadata = {
   title: 'Sampath Vishwa AR Games | Interactive Banking Kiosk Platform',

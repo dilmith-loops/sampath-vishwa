@@ -18,19 +18,25 @@ export default function HeroSection({
   onScrollToGames
 }: HeroSectionProps) {
   return (
-    <section style={{
-      position: 'relative',
-      padding: '48px 28px 36px 28px',
-      maxWidth: '1360px',
-      margin: '0 auto',
-      width: '100%'
-    }}>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        gap: '40px',
-        alignItems: 'center'
-      }}>
+    <section
+      className="hero-container"
+      style={{
+        position: 'relative',
+        padding: '48px 28px 36px 28px',
+        maxWidth: '1360px',
+        margin: '0 auto',
+        width: '100%'
+      }}
+    >
+      <div
+        className="hero-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '40px',
+          alignItems: 'center'
+        }}
+      >
         {/* Left Col: Narrative & Call to Action */}
         <div>
           {/* Eyebrow badge */}
@@ -54,14 +60,17 @@ export default function HeroSection({
             </span>
           </div>
 
-          <h1 style={{
-            fontSize: 'clamp(2.5rem, 5vw, 3.8rem)',
-            fontWeight: 900,
-            lineHeight: 1.1,
-            letterSpacing: '-1px',
-            color: '#ffffff',
-            marginBottom: '20px'
-          }}>
+          <h1
+            className="hero-title"
+            style={{
+              fontSize: 'clamp(2.5rem, 5vw, 3.8rem)',
+              fontWeight: 900,
+              lineHeight: 1.1,
+              letterSpacing: '-1px',
+              color: '#ffffff',
+              marginBottom: '20px'
+            }}
+          >
             Experience Banking in{' '}
             <span style={{
               background: 'linear-gradient(135deg, #f37021 0%, #ffaa00 50%, #d4af37 100%)',
@@ -82,7 +91,10 @@ export default function HeroSection({
             Step up to the future of Sri Lankan digital banking. Control transactions, settle utility bills, grow e-Fixed Deposits, and deflect cyber threats using only real-time webcam motion tracking.
           </p>
 
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '40px' }}>
+          <div
+            className="hero-cta-group"
+            style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '40px' }}
+          >
             <button
               id="hero-btn-quickplay"
               onClick={() => onQuickPlay(featuredGame)}
@@ -104,12 +116,15 @@ export default function HeroSection({
           </div>
 
           {/* 4 Feature Pillars Pill Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '16px',
-            maxWidth: '520px'
-          }}>
+          <div
+            className="hero-features"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '16px',
+              maxWidth: '520px'
+            }}
+          >
             <div style={{
               background: 'rgba(255, 255, 255, 0.03)',
               border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -177,18 +192,21 @@ export default function HeroSection({
         </div>
 
         {/* Right Col: Featured Kiosk Showcase Frame */}
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <div style={{
-            position: 'relative',
-            width: '100%',
-            maxWidth: '420px',
-            background: 'linear-gradient(180deg, rgba(15, 28, 58, 0.9) 0%, rgba(5, 11, 24, 0.95) 100%)',
-            border: '2px solid rgba(243, 112, 33, 0.35)',
-            borderRadius: '28px',
-            padding: '24px',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px rgba(243, 112, 33, 0.25)',
-            overflow: 'hidden'
-          }}>
+        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <div
+            className="hero-preview-kiosk"
+            style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '420px',
+              background: 'linear-gradient(180deg, rgba(15, 28, 58, 0.9) 0%, rgba(5, 11, 24, 0.95) 100%)',
+              border: '2px solid rgba(243, 112, 33, 0.35)',
+              borderRadius: '28px',
+              padding: '24px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px rgba(243, 112, 33, 0.25)',
+              overflow: 'hidden'
+            }}
+          >
             {/* Top Kiosk Camera & Sensor Notch */}
             <div style={{
               display: 'flex',

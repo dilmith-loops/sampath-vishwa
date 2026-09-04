@@ -99,30 +99,21 @@ export default function GameTheaterModal({
       }}
     >
       {/* Top Floating Control Bar */}
-      <div style={{
-        width: '100%',
-        maxWidth: '1280px',
-        padding: '14px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '16px',
-        zIndex: 10
-      }}>
+      <div className="theater-hud-bar">
         {/* Left: Brand & Game Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Image
             src={withBasePath('/brand/sampath-punkalasa.png')}
             alt="Sampath Logo"
-            width={36}
-            height={36}
-            style={{ borderRadius: 8 }}
+            width={32}
+            height={32}
+            style={{ borderRadius: 8, flexShrink: 0 }}
           />
           <div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
+            <div style={{ fontSize: 'clamp(0.9rem, 3vw, 1.1rem)', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
               {game.title}
             </div>
-            <div style={{ fontSize: '0.72rem', color: game.accentColor, fontWeight: 700, letterSpacing: '0.5px' }}>
+            <div className="hide-on-mobile" style={{ fontSize: '0.72rem', color: game.accentColor, fontWeight: 700, letterSpacing: '0.5px' }}>
               Sampath Vishwa AR • {game.trackingTech}
             </div>
           </div>
@@ -132,18 +123,19 @@ export default function GameTheaterModal({
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
-          background: 'rgba(255, 255, 255, 0.05)',
+          gap: '8px',
+          background: 'rgba(255, 255, 255, 0.06)',
           border: '1px solid rgba(255, 255, 255, 0.12)',
-          padding: '8px 22px',
+          padding: '6px 14px',
           borderRadius: '50px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
+          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+          flexShrink: 0
         }}>
-          <Trophy size={16} color="#d4af37" />
-          <span style={{ fontSize: '0.75rem', opacity: 0.8, letterSpacing: '1px' }}>SCORE</span>
+          <Trophy size={15} color="#d4af37" />
+          <span style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '0.5px' }}>SCORE</span>
           <span style={{
             fontFamily: 'Outfit, sans-serif',
-            fontSize: '1.4rem',
+            fontSize: '1.2rem',
             fontWeight: 900,
             color: '#ffffff',
             textShadow: '0 0 10px rgba(243, 112, 33, 0.5)'
@@ -153,17 +145,17 @@ export default function GameTheaterModal({
         </div>
 
         {/* Right: Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {/* Ratio Toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          {/* Ratio Toggle (Hidden on mobile) */}
           <button
             id="theater-toggle-ratio"
             onClick={() => setIsKioskRatio(!isKioskRatio)}
-            className="btn-secondary"
+            className="btn-secondary hide-on-mobile"
             title={isKioskRatio ? 'Switch to Wide Display' : 'Switch to 9:16 Kiosk Ratio'}
-            style={{ padding: '10px 14px' }}
+            style={{ padding: '8px 12px' }}
           >
-            {isKioskRatio ? <Monitor size={16} /> : <Smartphone size={16} />}
-            <span style={{ fontSize: '0.78rem' }}>{isKioskRatio ? '9:16 Kiosk' : 'Wide View'}</span>
+            {isKioskRatio ? <Monitor size={15} /> : <Smartphone size={15} />}
+            <span style={{ fontSize: '0.76rem' }}>{isKioskRatio ? '9:16 Kiosk' : 'Wide View'}</span>
           </button>
 
           {/* Restart */}
@@ -172,21 +164,21 @@ export default function GameTheaterModal({
             onClick={restartGame}
             className="btn-secondary"
             title="Restart Session"
-            style={{ padding: '10px 14px' }}
+            style={{ padding: '8px 12px' }}
           >
-            <RotateCcw size={16} />
-            <span style={{ fontSize: '0.78rem' }}>Restart</span>
+            <RotateCcw size={15} />
+            <span className="hide-on-mobile" style={{ fontSize: '0.76rem' }}>Restart</span>
           </button>
 
           {/* Fullscreen */}
           <button
             id="theater-btn-fullscreen"
             onClick={toggleModalFullscreen}
-            className="btn-secondary"
+            className="btn-secondary hide-on-mobile"
             title="Toggle Fullscreen"
-            style={{ padding: '10px' }}
+            style={{ padding: '8px 10px' }}
           >
-            <Maximize2 size={16} />
+            <Maximize2 size={15} />
           </button>
 
           {/* Close / Exit */}
@@ -195,44 +187,33 @@ export default function GameTheaterModal({
             onClick={onClose}
             className="btn-primary"
             style={{
-              padding: '10px 18px',
-              fontSize: '0.85rem',
+              padding: '8px 14px',
+              fontSize: '0.82rem',
               background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
-              boxShadow: '0 6px 20px rgba(239, 68, 68, 0.4)'
+              boxShadow: '0 4px 16px rgba(239, 68, 68, 0.4)'
             }}
           >
-            <X size={16} />
-            <span>Exit Game</span>
+            <X size={15} />
+            <span>Exit</span>
           </button>
         </div>
       </div>
 
       {/* Main Game Screen Canvas / Iframe */}
-      <div style={{
-        flex: 1,
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: isKioskRatio ? '10px 20px 20px 20px' : '0 20px 20px 20px',
-        overflow: 'hidden'
+      <div className="theater-stage-container" style={{
+        padding: isKioskRatio ? '6px 14px 16px 14px' : '0 14px 16px 14px',
       }}>
-        <div style={{
-          position: 'relative',
+        <div className="theater-frame" style={{
           width: isKioskRatio ? 'auto' : '100%',
           height: '100%',
           aspectRatio: isKioskRatio ? '9 / 16' : 'auto',
           maxWidth: isKioskRatio ? 'calc((100vh - 110px) * 9 / 16)' : '1400px',
-          maxHeight: 'calc(100vh - 100px)',
-          background: '#050b18',
-          borderRadius: isKioskRatio ? '24px' : '18px',
-          border: '2px solid rgba(243, 112, 33, 0.4)',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(243, 112, 33, 0.25)',
-          overflow: 'hidden'
+          maxHeight: 'calc(100vh - 80px)',
+          borderRadius: isKioskRatio ? '20px' : '16px',
         }}>
           {/* Top Notch for Kiosk Feel */}
           {isKioskRatio && (
-            <div style={{
+            <div className="hide-on-mobile" style={{
               position: 'absolute',
               top: 8,
               left: '50%',
@@ -261,17 +242,17 @@ export default function GameTheaterModal({
         </div>
       </div>
 
-      {/* Bottom Hint Banner */}
-      <div style={{
-        padding: '8px 16px 14px 16px',
-        fontSize: '0.78rem',
+      {/* Bottom Hint Banner (Hidden on mobile to maximize viewport) */}
+      <div className="hide-on-mobile" style={{
+        padding: '6px 16px 12px 16px',
+        fontSize: '0.75rem',
         color: '#94a3b8',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center'
       }}>
-        <span>Powered by Sampath Vishwa AR Engine • Stand within webcam view for optimal gesture tracking</span>
+        <span>Powered by Sampath Vishwa AR Engine • Stand within camera view for optimal gesture tracking</span>
       </div>
     </div>
   );

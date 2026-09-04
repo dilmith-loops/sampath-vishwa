@@ -58,72 +58,64 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
       overflow: 'hidden'
     }}>
       {/* Top HUD Bar */}
-      <header style={{
-        padding: '12px 24px',
-        background: 'rgba(5, 11, 24, 0.9)',
-        backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        zIndex: 50
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <Link href="/" className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+      <header
+        className="nav-header"
+        style={{
+          padding: '12px 20px',
+          background: 'rgba(5, 11, 24, 0.9)',
+          backdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          zIndex: 50
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link href="/" className="btn-secondary" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
             <ArrowLeft size={16} />
-            <span>Lobby</span>
+            <span className="hide-on-mobile">Lobby</span>
           </Link>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Image
               src={withBasePath('/brand/sampath-punkalasa.png')}
               alt="Sampath Logo"
-              width={32}
-              height={32}
-              style={{ borderRadius: 8 }}
+              width={28}
+              height={28}
+              style={{ borderRadius: 6, flexShrink: 0 }}
             />
             <div>
-              <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff' }}>
+              <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#ffffff' }}>
                 {game.title}
               </div>
-              <div style={{ fontSize: '0.7rem', color: game.accentColor, fontWeight: 600 }}>
+              <div className="hide-on-mobile" style={{ fontSize: '0.7rem', color: game.accentColor, fontWeight: 600 }}>
                 {game.trackingTech}
               </div>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button onClick={handleRestart} className="btn-secondary" style={{ padding: '8px 14px' }} title="Restart">
-            <RotateCcw size={16} />
-            <span style={{ fontSize: '0.8rem' }}>Restart</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={handleRestart} className="btn-secondary" style={{ padding: '8px 12px' }} title="Restart">
+            <RotateCcw size={15} />
+            <span className="hide-on-mobile" style={{ fontSize: '0.78rem' }}>Restart</span>
           </button>
 
-          <button onClick={toggleFullscreen} className="btn-secondary" style={{ padding: '8px 12px' }} title="Fullscreen">
-            <Maximize2 size={16} />
+          <button onClick={toggleFullscreen} className="btn-secondary hide-on-mobile" style={{ padding: '8px 10px' }} title="Fullscreen">
+            <Maximize2 size={15} />
           </button>
         </div>
       </header>
 
       {/* Main Kiosk Viewport */}
-      <main style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '12px',
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          position: 'relative',
+      <main className="theater-stage-container">
+        <div className="theater-frame" style={{
           width: '100%',
           height: '100%',
           maxWidth: 'calc((100vh - 80px) * 9 / 16)',
           aspectRatio: '9 / 16',
-          borderRadius: '24px',
-          border: '2px solid rgba(243, 112, 33, 0.4)',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(243, 112, 33, 0.25)',
-          overflow: 'hidden'
+          borderRadius: '20px',
         }}>
           <iframe
             id="kiosk-frame"

@@ -29,51 +29,29 @@ export default function HowToPlayModal({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9998,
-        background: 'rgba(3, 7, 18, 0.9)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px'
-      }}
+      className="modal-overlay"
       onClick={onClose}
     >
       <div
-        style={{
-          width: '100%',
-          maxWidth: '780px',
-          background: 'linear-gradient(180deg, #0a1329 0%, #050b18 100%)',
-          border: '1px solid rgba(243, 112, 33, 0.35)',
-          borderRadius: '28px',
-          padding: '32px',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(243, 112, 33, 0.2)',
-          maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
+        className="modal-card"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Image
               src={withBasePath('/brand/sampath-punkalasa.png')}
               alt="Sampath Logo"
-              width={42}
-              height={42}
-              style={{ borderRadius: 10 }}
+              width={36}
+              height={36}
+              style={{ borderRadius: 8, flexShrink: 0 }}
             />
             <div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
+              <h2 style={{ fontSize: 'clamp(1.15rem, 4vw, 1.5rem)', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
                 Player Guide & <span style={{ color: '#f37021' }}>Gestures</span>
               </h2>
-              <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-                Master touchless banking interactions on Sampath Vishwa
+              <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                Touchless banking motions on Sampath Vishwa
               </div>
             </div>
           </div>
@@ -84,16 +62,17 @@ export default function HowToPlayModal({
               background: 'rgba(255, 255, 255, 0.06)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '50%',
-              width: 38,
-              height: 38,
+              width: 36,
+              height: 36,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#cbd5e1',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flexShrink: 0
             }}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
@@ -102,13 +81,15 @@ export default function HowToPlayModal({
           className="no-scrollbar"
           style={{
             display: 'flex',
-            flexWrap: 'wrap',
+            overflowX: 'auto',
+            flexWrap: 'nowrap',
+            WebkitOverflowScrolling: 'touch',
             gap: '6px',
             background: 'rgba(255, 255, 255, 0.04)',
             padding: '6px',
             borderRadius: '16px',
             border: '1px solid rgba(255, 255, 255, 0.08)',
-            marginBottom: '20px',
+            marginBottom: '18px',
             alignItems: 'center'
           }}
         >
