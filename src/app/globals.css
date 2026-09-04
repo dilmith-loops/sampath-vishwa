@@ -369,6 +369,39 @@ button, a, input, select {
   gap: 16px;
 }
 
+/* Navigation Bar */
+.nav-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(5, 11, 24, 0.88);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: nowrap !important;
+  width: 100%;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: nowrap !important;
+}
+
 /* Tablet Media Query (<= 1024px) */
 @media (max-width: 1024px) {
   .games-grid {
@@ -384,8 +417,38 @@ button, a, input, select {
   }
 
   .nav-header {
-    padding: 10px 14px !important;
+    padding: 8px 14px !important;
     gap: 8px !important;
+    height: 56px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .nav-brand {
+    gap: 6px !important;
+  }
+
+  .brand-logo-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .brand-logo-text {
+    height: 22px !important;
+  }
+
+  .nav-controls {
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .nav-controls button {
+    padding: 8px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .nav-btn-text {
@@ -393,35 +456,55 @@ button, a, input, select {
   }
 
   .hero-container {
-    padding: 24px 16px 20px 16px !important;
+    padding: 20px 16px 16px 16px !important;
   }
 
   .hero-grid {
     grid-template-columns: 1fr !important;
-    gap: 28px !important;
+    gap: 24px !important;
+  }
+
+  .hero-eyebrow {
+    margin-bottom: 12px !important;
+    padding: 5px 12px !important;
   }
 
   .hero-title {
-    font-size: clamp(1.85rem, 7.5vw, 2.7rem) !important;
+    font-size: clamp(1.75rem, 7vw, 2.5rem) !important;
     letter-spacing: -0.5px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .hero-description {
+    font-size: 0.92rem !important;
+    line-height: 1.55 !important;
+    margin-bottom: 20px !important;
   }
 
   .hero-cta-group {
     flex-direction: column !important;
     width: 100% !important;
-    gap: 12px !important;
+    gap: 10px !important;
+    margin-bottom: 24px !important;
   }
 
   .hero-cta-group button {
     width: 100% !important;
     justify-content: center !important;
-    padding: 14px 20px !important;
+    padding: 13px 20px !important;
+    font-size: 0.95rem !important;
   }
 
   .hero-features {
     grid-template-columns: 1fr !important;
     max-width: 100% !important;
-    gap: 10px !important;
+    gap: 8px !important;
+  }
+
+  .hero-preview-kiosk {
+    padding: 16px !important;
+    border-radius: 20px !important;
+    max-width: 100% !important;
   }
 
   .catalog-section {

@@ -40,19 +40,22 @@ export default function HeroSection({
         {/* Left Col: Narrative & Call to Action */}
         <div>
           {/* Eyebrow badge */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            background: 'rgba(243, 112, 33, 0.12)',
-            border: '1px solid rgba(243, 112, 33, 0.35)',
-            padding: '8px 20px',
-            borderRadius: '50px',
-            marginBottom: '20px'
-          }}>
+          <div
+            className="hero-eyebrow"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: 'rgba(243, 112, 33, 0.12)',
+              border: '1px solid rgba(243, 112, 33, 0.35)',
+              padding: '6px 16px',
+              borderRadius: '50px',
+              marginBottom: '16px'
+            }}
+          >
             <span style={{
-              fontSize: '0.8rem',
+              fontSize: 'clamp(0.68rem, 2.5vw, 0.8rem)',
               fontWeight: 700,
-              letterSpacing: '1px',
+              letterSpacing: '0.8px',
               color: '#f37021',
               textTransform: 'uppercase'
             }}>
@@ -63,12 +66,12 @@ export default function HeroSection({
           <h1
             className="hero-title"
             style={{
-              fontSize: 'clamp(2.5rem, 5vw, 3.8rem)',
+              fontSize: 'clamp(2rem, 5vw, 3.8rem)',
               fontWeight: 900,
-              lineHeight: 1.1,
+              lineHeight: 1.12,
               letterSpacing: '-1px',
               color: '#ffffff',
-              marginBottom: '20px'
+              marginBottom: '16px'
             }}
           >
             Experience Banking in{' '}
@@ -81,19 +84,22 @@ export default function HeroSection({
             </span>
           </h1>
 
-          <p style={{
-            fontSize: '1.15rem',
-            color: '#94a3b8',
-            lineHeight: 1.65,
-            maxWidth: '560px',
-            marginBottom: '32px'
-          }}>
+          <p
+            className="hero-description"
+            style={{
+              fontSize: 'clamp(0.92rem, 2.8vw, 1.15rem)',
+              color: '#94a3b8',
+              lineHeight: 1.6,
+              maxWidth: '560px',
+              marginBottom: '28px'
+            }}
+          >
             Step up to the future of Sri Lankan digital banking. Control transactions, settle utility bills, grow e-Fixed Deposits, and deflect cyber threats using only real-time webcam motion tracking.
           </p>
 
           <div
             className="hero-cta-group"
-            style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '40px' }}
+            style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', marginBottom: '36px' }}
           >
             <button
               id="hero-btn-quickplay"

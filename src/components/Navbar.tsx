@@ -49,41 +49,27 @@ export default function Navbar({
   return (
     <header
       className="nav-header"
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        background: 'rgba(5, 11, 24, 0.85)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        padding: '14px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '12px'
-      }}
     >
       {/* Brand Identification */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <div className="nav-brand">
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
+          gap: '8px',
           textDecoration: 'none'
         }}>
-          <div style={{
+          <div className="brand-logo-icon" style={{
             position: 'relative',
-            width: 40,
-            height: 40,
+            width: 38,
+            height: 38,
             flexShrink: 0,
             filter: 'drop-shadow(0 4px 14px rgba(243, 112, 33, 0.45))'
           }}>
             <Image
               src={withBasePath('/brand/sampath-punkalasa.png')}
               alt="Sampath Bank"
-              width={40}
-              height={40}
+              width={38}
+              height={38}
               style={{ objectFit: 'contain', width: '100%', height: '100%' }}
               priority
             />
@@ -93,20 +79,42 @@ export default function Navbar({
             <Image
               src={withBasePath('/brand/vishwa-logo.png')}
               alt="Sampath Vishwa Online Banking"
-              width={150}
-              height={46}
-              style={{ objectFit: 'contain', height: '32px', width: 'auto', display: 'block' }}
+              width={140}
+              height={42}
+              className="brand-logo-text"
+              style={{ objectFit: 'contain', height: '28px', width: 'auto', display: 'block' }}
               priority
             />
+          </div>
+
+          {/* Subtle Camera Indicator Dot on Mobile */}
+          <div
+            title={cameraActive ? 'Camera Ready for AR Gestures' : 'Camera Off'}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '2px 4px',
+              cursor: 'pointer'
+            }}
+          >
+            <span style={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              backgroundColor: cameraActive ? '#00ff88' : '#f37021',
+              boxShadow: cameraActive ? '0 0 8px #00ff88' : 'none',
+              display: 'inline-block'
+            }} />
           </div>
         </div>
       </div>
 
       {/* Right Controls & Nav actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {/* Camera Status Indicator */}
+      <div className="nav-controls">
+        {/* Full Camera Status Pill (Desktop only) */}
         <div
           title={cameraActive ? 'Webcam detected' : 'Webcam required for AR motion'}
+          className="hide-on-mobile"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -120,7 +128,7 @@ export default function Navbar({
           }}
         >
           <Camera size={15} color={cameraActive ? '#00ff88' : '#f37021'} />
-          <span className="hide-on-mobile" style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>
             {cameraActive === null ? 'Checking Camera...' : cameraActive ? 'Camera Ready' : 'Camera Off'}
           </span>
           <span style={{
@@ -132,7 +140,7 @@ export default function Navbar({
           }} />
         </div>
 
-        {/* Kiosk Mode Ratio Toggle (Hidden on mobile since phone is already 9:16) */}
+        {/* Kiosk Mode Ratio Toggle (Desktop only: phone is naturally portrait) */}
         <button
           id="btn-toggle-kiosk-view"
           onClick={onToggleKioskAspect}
@@ -150,11 +158,11 @@ export default function Navbar({
           </span>
         </button>
 
-        {/* Fullscreen Kiosk */}
+        {/* Fullscreen Kiosk (Desktop only) */}
         <button
           id="btn-toggle-fullscreen"
           onClick={toggleFullscreen}
-          className="btn-secondary"
+          className="btn-secondary hide-on-mobile"
           style={{ padding: '8px 12px' }}
           title="Full Screen Display Mode"
         >
@@ -172,15 +180,16 @@ export default function Navbar({
           {isSoundMuted ? <VolumeX size={16} color="#ff4d4d" /> : <Volume2 size={16} color="#00ff88" />}
         </button>
 
-        {/* How to Play */}
+        {/* How to Play Guide */}
         <button
           id="btn-how-to-play"
           onClick={onOpenHowToPlay}
           className="btn-secondary"
           style={{ padding: '8px 14px' }}
+          title="Player Guide & Gestures"
         >
           <HelpCircle size={16} />
-          <span className="nav-btn-text">Guide</span>
+          <span className="nav-btn-text hide-on-mobile">Guide</span>
         </button>
 
         {/* Leaderboard Button */}
@@ -189,9 +198,10 @@ export default function Navbar({
           onClick={onOpenLeaderboard}
           className="btn-primary"
           style={{ padding: '8px 18px', fontSize: '0.85rem' }}
+          title="Top Player Rankings"
         >
           <Trophy size={16} />
-          <span className="nav-btn-text">Rankings</span>
+          <span className="nav-btn-text hide-on-mobile">Rankings</span>
         </button>
       </div>
     </header>
