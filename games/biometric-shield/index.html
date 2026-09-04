@@ -219,6 +219,21 @@
     let poseData = null;
     let isMuted = false;
 
+    // Preload Sampath Brand Assets
+    const punkalasaImg = new Image();
+    punkalasaImg.src = '../../brand/sampath-punkalasa.png';
+    let punkalasaLoaded = false;
+    punkalasaImg.onload = () => { punkalasaLoaded = true; };
+
+    const vishwaLogoImg = new Image();
+    vishwaLogoImg.src = '../../brand/vishwa-logo.png';
+    let vishwaLoaded = false;
+    vishwaLogoImg.onload = () => { vishwaLoaded = true; };
+
+    let bucketFlash = 0;      // Flashes emerald/gold on absorbing safe tokens
+    let threatFlash = 0;      // Flashes red when threat breaches unshielded
+    let bucketParticles = [];  // Sparkles & rings when tokens are absorbed
+
     let audioCtx = null;
     function getAudioContext() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -327,16 +342,45 @@
 
         if (!poseData) return;
 
-        // 2. Draw Biometric Grid on Torso
-        drawBiometricGrid();
+        // 2. Torso Coordinates & Sampath Bucket Dimensions
+        const leftShoulder = poseData[11];
+        const rightShoulder = poseData[12];
+        const sh1X = (1 - leftShoulder.x) * canvasElement.width;
+        const sh1Y = leftShoulder.y * canvasElement.height;
+        const sh2X = (1 - rightShoulder.x) * canvasElement.width;
+        const sh2Y = rightShoulder.y * canvasElement.height;
+
+        const shoulderDist = Math.max(120, Math.hypot(sh2X - sh1X, sh2Y - sh1Y));
+        const shoulderMidX = (sh1X + sh2X) / 2;
+        const shoulderMidY = (sh1Y + sh2Y) / 2;
+
+        const bucketCenterX = shoulderMidX;
+        const topRx = Math.max(65, shoulderDist * 0.44);
+        const topRy = topRx * 0.28;
+        const bucketTopY = shoulderMidY + topRy * 1.5;
+
+        // Check hips for seated vs standing height
+        let baseY = bucketTopY + topRx * 1.55;
+        if (poseData[23] && poseData[24] && poseData[23].y > 0 && poseData[24].y > 0) {
+            const hipY = ((poseData[23].y + poseData[24].y) / 2) * canvasElement.height;
+            if (hipY > bucketTopY + 70) {
+                baseY = Math.min(canvasElement.height - 25, Math.max(bucketTopY + topRx * 1.3, hipY * 0.96));
+            }
+        }
+        baseY = Math.min(canvasElement.height - 25, baseY);
+        const bHeight = Math.max(90, baseY - bucketTopY);
+        const bottomRx = topRx * 0.64;
+        const bottomRy = bottomRx * 0.22;
+
+        // Draw the branded Sampath Bucket on torso
+        drawSampathBucket(bucketCenterX, bucketTopY, topRx, topRy, bottomRx, bottomRy, bHeight, baseY);
+
+        // Draw refined facial scan reticle
+        drawBiometricFaceScan();
 
         // 3. Wrist Shield Tracking
         const leftWrist = poseData[15];
         const rightWrist = poseData[16];
-        const shoulderMid = { 
-            x: (poseData[11].x + poseData[12].x) / 2, 
-            y: (poseData[11].y + poseData[12].y) / 2 
-        };
 
         const shield = {
             x1: (1 - leftWrist.x) * canvasElement.width,
@@ -378,11 +422,32 @@
             canvasCtx.restore();
         }
 
+        // Render Absorption Sparkles
+        for (let i = bucketParticles.length - 1; i >= 0; i--) {
+            const p = bucketParticles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.alpha -= p.decay;
+            if (p.alpha <= 0) {
+                bucketParticles.splice(i, 1);
+                continue;
+            }
+            canvasCtx.save();
+            canvasCtx.globalAlpha = p.alpha;
+            canvasCtx.fillStyle = p.color;
+            canvasCtx.shadowBlur = 10;
+            canvasCtx.shadowColor = p.color;
+            canvasCtx.beginPath();
+            canvasCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            canvasCtx.fill();
+            canvasCtx.restore();
+        }
+
         if (!gameActive) return;
 
-        // 4. Object Logic
-        const targetX = (1 - shoulderMid.x) * canvasElement.width;
-        const targetY = shoulderMid.y * canvasElement.height;
+        // 4. Object Logic: Objects home directly into the mouth of the Sampath Bucket
+        const targetX = bucketCenterX;
+        const targetY = bucketTopY + topRy * 0.4;
 
         objects.forEach((obj, index) => {
             if (!obj.deflected) {
@@ -405,16 +470,19 @@
                     }
                 }
 
-                // Torso Collision
+                // Bucket Mouth Absorption Collision
                 const distToTarget = Math.hypot(obj.x - targetX, obj.y - targetY);
-                if (distToTarget < 80) {
+                if (distToTarget < Math.max(50, topRx * 0.75)) {
                     if (obj.type === 'THREAT') {
                         lives--;
+                        threatFlash = 1.0;
                         playSound(160, 'square', 0.4);
                         updateShieldUI();
                         if (lives <= 0) endGame();
                     } else {
                         score += 200;
+                        bucketFlash = 1.0;
+                        spawnBucketParticles(targetX, targetY);
                         playSound(950, 'sine', 0.2);
                         const ratingLabel = document.getElementById('ratingLabel');
                         if (ratingLabel) ratingLabel.innerText = score;
@@ -433,30 +501,285 @@
         });
     }
 
-    function drawBiometricGrid() {
-        const torso = [11, 12, 24, 23];
+    function spawnBucketParticles(x, y) {
+        for (let i = 0; i < 14; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 1.2 + Math.random() * 3.2;
+            bucketParticles.push({
+                x: x + (Math.random() - 0.5) * 30,
+                y: y + (Math.random() - 0.5) * 12,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 1.2,
+                size: 3 + Math.random() * 4,
+                color: Math.random() > 0.35 ? '#00ff88' : '#f37021',
+                alpha: 1.0,
+                decay: 0.028 + Math.random() * 0.02
+            });
+        }
+    }
+
+    function drawSampathBucket(cx, topY, topRx, topRy, bottomRx, bottomRy, bHeight, baseY) {
         canvasCtx.save();
-        canvasCtx.strokeStyle = 'rgba(0, 242, 255, 0.35)';
-        canvasCtx.lineWidth = 1.5;
+
+        // Smoothly decay flashes
+        if (bucketFlash > 0) bucketFlash = Math.max(0, bucketFlash - 0.04);
+        if (threatFlash > 0) threatFlash = Math.max(0, threatFlash - 0.04);
+
+        // 1. Back Wall & Inner Opening (Depth inside bucket)
         canvasCtx.beginPath();
-        torso.forEach((idx, i) => {
-            const pt = poseData[idx];
-            const px = (1 - pt.x) * canvasElement.width;
-            const py = pt.y * canvasElement.height;
-            if (i === 0) canvasCtx.moveTo(px, py);
-            else canvasCtx.lineTo(px, py);
-        });
+        canvasCtx.ellipse(cx, topY, topRx, topRy, 0, Math.PI, 0); // Top/back half
+        canvasCtx.fillStyle = '#030816';
+        canvasCtx.fill();
+
+        // Inner glowing intake vortex
+        const vortex = canvasCtx.createRadialGradient(cx, topY, 4, cx, topY, topRx);
+        if (bucketFlash > 0.05) {
+            vortex.addColorStop(0, `rgba(0, 255, 136, ${0.4 + bucketFlash * 0.5})`);
+            vortex.addColorStop(0.5, `rgba(243, 112, 33, ${0.2 + bucketFlash * 0.3})`);
+            vortex.addColorStop(1, 'rgba(4, 9, 22, 0.9)');
+        } else if (threatFlash > 0.05) {
+            vortex.addColorStop(0, `rgba(255, 62, 62, ${0.5 + threatFlash * 0.4})`);
+            vortex.addColorStop(0.6, 'rgba(120, 20, 20, 0.4)');
+            vortex.addColorStop(1, 'rgba(4, 9, 22, 0.9)');
+        } else {
+            vortex.addColorStop(0, 'rgba(0, 242, 255, 0.55)');
+            vortex.addColorStop(0.4, 'rgba(243, 112, 33, 0.25)');
+            vortex.addColorStop(1, 'rgba(4, 9, 22, 0.9)');
+        }
+        canvasCtx.fillStyle = vortex;
+        canvasCtx.fill();
+
+        // 2. Bucket Body Outer Shell
+        canvasCtx.beginPath();
+        // Start at left rim
+        canvasCtx.moveTo(cx - topRx, topY);
+        // Left curved wall tapering to base
+        canvasCtx.bezierCurveTo(
+            cx - topRx * 0.96, topY + bHeight * 0.45,
+            cx - bottomRx * 1.15, topY + bHeight * 0.85,
+            cx - bottomRx, baseY
+        );
+        // Bottom front curved lip
+        canvasCtx.ellipse(cx, baseY, bottomRx, bottomRy, 0, Math.PI, 0, true);
+        // Right curved wall rising to right rim
+        canvasCtx.bezierCurveTo(
+            cx + bottomRx * 1.15, topY + bHeight * 0.85,
+            cx + topRx * 0.96, topY + bHeight * 0.45,
+            cx + topRx, topY
+        );
+        // Front rim lip to close path
+        canvasCtx.ellipse(cx, topY, topRx, topRy, 0, 0, Math.PI, false);
         canvasCtx.closePath();
+
+        // Body Gradient Fill
+        const bodyGrad = canvasCtx.createLinearGradient(cx, topY, cx, baseY);
+        if (bucketFlash > 0.05) {
+            bodyGrad.addColorStop(0, `rgba(10, 38, 55, ${0.9 + bucketFlash * 0.08})`);
+            bodyGrad.addColorStop(0.5, `rgba(6, 28, 38, 0.92)`);
+            bodyGrad.addColorStop(1, `rgba(4, 18, 26, 0.96)`);
+        } else if (threatFlash > 0.05) {
+            bodyGrad.addColorStop(0, `rgba(45, 12, 18, 0.94)`);
+            bodyGrad.addColorStop(0.5, `rgba(32, 8, 14, 0.94)`);
+            bodyGrad.addColorStop(1, `rgba(18, 4, 8, 0.96)`);
+        } else {
+            bodyGrad.addColorStop(0, 'rgba(8, 22, 48, 0.88)');
+            bodyGrad.addColorStop(0.4, 'rgba(5, 16, 36, 0.92)');
+            bodyGrad.addColorStop(1, 'rgba(3, 9, 22, 0.96)');
+        }
+        canvasCtx.fillStyle = bodyGrad;
+        canvasCtx.fill();
+
+        // Cyber Edge Glow & Outline
+        canvasCtx.lineWidth = 3;
+        canvasCtx.shadowBlur = bucketFlash > 0.05 ? 26 : (threatFlash > 0.05 ? 26 : 16);
+        canvasCtx.shadowColor = bucketFlash > 0.05 ? '#00ff88' : (threatFlash > 0.05 ? '#ff3e3e' : '#00f2ff');
+        canvasCtx.strokeStyle = bucketFlash > 0.05 ? '#00ff88' : (threatFlash > 0.05 ? '#ff3e3e' : '#f37021');
         canvasCtx.stroke();
-        
-        // Nose target crosshair
+        canvasCtx.shadowBlur = 0; // reset shadow for inner details
+
+        // Tech Horizontal Rings on Bucket Body
+        [0.32, 0.65, 0.88].forEach((ratio) => {
+            const yLevel = topY + bHeight * ratio;
+            const rxLevel = topRx - (topRx - bottomRx) * ratio;
+            const ryLevel = rxLevel * 0.22;
+            canvasCtx.beginPath();
+            canvasCtx.ellipse(cx, yLevel, rxLevel, ryLevel, 0, 0, Math.PI);
+            canvasCtx.strokeStyle = ratio === 0.65 ? 'rgba(243, 112, 33, 0.35)' : 'rgba(0, 242, 255, 0.25)';
+            canvasCtx.lineWidth = 1.2;
+            canvasCtx.stroke();
+        });
+
+        // Glass Reflection Sheen (along left curve)
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(cx - topRx * 0.85, topY + topRy * 0.8);
+        canvasCtx.bezierCurveTo(
+            cx - topRx * 0.82, topY + bHeight * 0.45,
+            cx - bottomRx * 0.95, topY + bHeight * 0.78,
+            cx - bottomRx * 0.75, baseY - bottomRy * 0.5
+        );
+        canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+        canvasCtx.lineWidth = 4;
+        canvasCtx.lineCap = 'round';
+        canvasCtx.stroke();
+
+        // 3. Top Rim Front Lip (Glowing Metallic Edge)
+        canvasCtx.beginPath();
+        canvasCtx.ellipse(cx, topY, topRx, topRy, 0, 0, Math.PI);
+        canvasCtx.strokeStyle = bucketFlash > 0.05 ? '#00ff88' : (threatFlash > 0.05 ? '#ff3e3e' : '#f37021');
+        canvasCtx.lineWidth = 4;
+        canvasCtx.shadowBlur = 12;
+        canvasCtx.shadowColor = bucketFlash > 0.05 ? '#00ff88' : '#f37021';
+        canvasCtx.stroke();
+
+        // Inner glowing cyber bead on lip
+        canvasCtx.beginPath();
+        canvasCtx.ellipse(cx, topY, topRx - 3, topRy - 2, 0, 0, Math.PI);
+        canvasCtx.strokeStyle = '#00f2ff';
+        canvasCtx.lineWidth = 1.5;
+        canvasCtx.shadowBlur = 8;
+        canvasCtx.shadowColor = '#00f2ff';
+        canvasCtx.stroke();
+        canvasCtx.shadowBlur = 0;
+
+        // 4. "SAMPATH DIGITAL VAULT" Holographic Rim Badge
+        const badgeW = Math.min(topRx * 1.5, 170);
+        const badgeH = 20;
+        const badgeY = topY + topRy * 0.9;
+        canvasCtx.save();
+        if (canvasCtx.roundRect) {
+            canvasCtx.beginPath();
+            canvasCtx.roundRect(cx - badgeW/2, badgeY, badgeW, badgeH, 10);
+        } else {
+            canvasCtx.beginPath();
+            canvasCtx.rect(cx - badgeW/2, badgeY, badgeW, badgeH);
+        }
+        canvasCtx.fillStyle = 'rgba(3, 8, 20, 0.88)';
+        canvasCtx.fill();
+        canvasCtx.strokeStyle = 'rgba(0, 242, 255, 0.5)';
+        canvasCtx.lineWidth = 1.2;
+        canvasCtx.stroke();
+
+        canvasCtx.font = 'bold 9px "Outfit", sans-serif';
+        canvasCtx.textAlign = 'center';
+        canvasCtx.fillStyle = '#00f2ff';
+        canvasCtx.shadowBlur = 6;
+        canvasCtx.shadowColor = '#00f2ff';
+        canvasCtx.fillText('🛡 SAMPATH DIGITAL VAULT', cx, badgeY + 13.5);
+        canvasCtx.restore();
+
+        // 5. OFFICIAL SAMPATH PUNKALASA LOGO (Centered in Bucket)
+        const pSize = Math.min(topRx * 0.88, bHeight * 0.44);
+        const punkalasaY = badgeY + badgeH + pSize * 0.48;
+
+        // Glowing emblem disk behind the Punkalasa
+        canvasCtx.save();
+        const diskGrad = canvasCtx.createRadialGradient(cx, punkalasaY, 4, cx, punkalasaY, pSize * 0.6);
+        diskGrad.addColorStop(0, 'rgba(243, 112, 33, 0.4)');
+        diskGrad.addColorStop(0.7, 'rgba(212, 175, 55, 0.2)');
+        diskGrad.addColorStop(1, 'rgba(0, 242, 255, 0)');
+        canvasCtx.fillStyle = diskGrad;
+        canvasCtx.beginPath();
+        canvasCtx.arc(cx, punkalasaY, pSize * 0.62, 0, Math.PI * 2);
+        canvasCtx.fill();
+
+        // Subtle rotating tech orbit
+        canvasCtx.save();
+        canvasCtx.translate(cx, punkalasaY);
+        canvasCtx.rotate((Date.now() / 2500) % (Math.PI * 2));
+        canvasCtx.setLineDash([5, 6]);
+        canvasCtx.strokeStyle = 'rgba(243, 112, 33, 0.5)';
+        canvasCtx.lineWidth = 1.2;
+        canvasCtx.beginPath();
+        canvasCtx.arc(0, 0, pSize * 0.55, 0, Math.PI * 2);
+        canvasCtx.stroke();
+        canvasCtx.restore();
+
+        // Draw Punkalasa Image
+        if (punkalasaLoaded && punkalasaImg.complete) {
+            canvasCtx.shadowColor = 'rgba(243, 112, 33, 0.65)';
+            canvasCtx.shadowBlur = 14;
+            canvasCtx.drawImage(punkalasaImg, cx - pSize/2, punkalasaY - pSize/2, pSize, pSize);
+        }
+        canvasCtx.restore();
+
+        // 6. OFFICIAL SAMPATH VISHWA LOGO (Lower Section of Bucket)
+        const vWidth = Math.min(bottomRx * 1.6, topRx * 1.25);
+        const vHeight = vWidth * (258 / 715);
+        const vY = Math.max(punkalasaY + pSize * 0.52, baseY - vHeight - bottomRy * 0.8 - 6);
+
+        canvasCtx.save();
+        // Plaque backdrop for Vishwa logo
+        if (canvasCtx.roundRect) {
+            canvasCtx.beginPath();
+            canvasCtx.roundRect(cx - vWidth/2 - 6, vY - 3, vWidth + 12, vHeight + 6, 6);
+        } else {
+            canvasCtx.beginPath();
+            canvasCtx.rect(cx - vWidth/2 - 6, vY - 3, vWidth + 12, vHeight + 6);
+        }
+        canvasCtx.fillStyle = 'rgba(2, 6, 18, 0.75)';
+        canvasCtx.fill();
+        canvasCtx.strokeStyle = 'rgba(243, 112, 33, 0.4)';
+        canvasCtx.lineWidth = 1;
+        canvasCtx.stroke();
+
+        if (vishwaLoaded && vishwaLogoImg.complete) {
+            canvasCtx.shadowColor = 'rgba(0, 242, 255, 0.4)';
+            canvasCtx.shadowBlur = 10;
+            canvasCtx.drawImage(vishwaLogoImg, cx - vWidth/2, vY, vWidth, vHeight);
+        }
+        canvasCtx.restore();
+
+        // 7. Deposit Indicator Arrow (Bouncing chevron over bucket opening)
+        if (gameActive) {
+            const bounce = Math.sin(Date.now() / 180) * 3;
+            canvasCtx.save();
+            canvasCtx.font = 'bold 9px "Outfit", sans-serif';
+            canvasCtx.textAlign = 'center';
+            canvasCtx.fillStyle = bucketFlash > 0.05 ? '#00ff88' : '#00f2ff';
+            canvasCtx.shadowBlur = 8;
+            canvasCtx.shadowColor = bucketFlash > 0.05 ? '#00ff88' : '#00f2ff';
+            canvasCtx.fillText('▼ DEPOSIT SECURE TOKENS ▼', cx, topY - topRy - 6 + bounce);
+            canvasCtx.restore();
+        }
+
+        canvasCtx.restore();
+    }
+
+    function drawBiometricFaceScan() {
+        if (!poseData || !poseData[0]) return;
         const nose = poseData[0];
         const nx = (1 - nose.x) * canvasElement.width;
         const ny = nose.y * canvasElement.height;
+
+        canvasCtx.save();
+        // Rotating outer scanning brackets
+        const angle = (Date.now() / 900) % (Math.PI * 2);
+        canvasCtx.translate(nx, ny);
+        canvasCtx.rotate(angle);
+        canvasCtx.strokeStyle = 'rgba(0, 242, 255, 0.5)';
+        canvasCtx.lineWidth = 1.5;
+        canvasCtx.setLineDash([12, 14]);
         canvasCtx.beginPath();
-        canvasCtx.arc(nx, ny, 36, 0, Math.PI * 2);
-        canvasCtx.strokeStyle = 'rgba(243, 112, 33, 0.5)';
+        canvasCtx.arc(0, 0, 42, 0, Math.PI * 2);
         canvasCtx.stroke();
+        canvasCtx.setLineDash([]);
+
+        // Counter-rotating inner ring
+        canvasCtx.rotate(-angle * 2);
+        canvasCtx.strokeStyle = 'rgba(243, 112, 33, 0.65)';
+        canvasCtx.lineWidth = 1.5;
+        canvasCtx.beginPath();
+        canvasCtx.arc(0, 0, 30, 0, Math.PI * 2);
+        canvasCtx.stroke();
+
+        // Biometric HUD tag
+        canvasCtx.rotate(angle); // back to neutral orientation
+        canvasCtx.fillStyle = '#00f2ff';
+        canvasCtx.font = 'bold 8.5px "Outfit", sans-serif';
+        canvasCtx.textAlign = 'center';
+        canvasCtx.shadowBlur = 6;
+        canvasCtx.shadowColor = '#00f2ff';
+        canvasCtx.fillText('BIO-ID: SECURED', 0, 56);
         canvasCtx.restore();
     }
 
