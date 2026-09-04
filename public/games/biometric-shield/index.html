@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Sampath Vishwa - Biometric Defense</title>
+    <title>Sampath Vishwa - Knight's Defense</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -17,6 +17,7 @@
             --deep-navy: #050b18;
             --danger-red: #ff3e3e;
             --success-green: #00ff88;
+            --gold: #ffd700;
             --border-glass: rgba(255, 255, 255, 0.12);
         }
 
@@ -95,7 +96,6 @@
         }
 
         @media (min-width: 540px) {
-            .ui-layer { padding: 20px 24px; }
             .shield-dot { width: 14px; height: 14px; }
         }
 
@@ -130,15 +130,15 @@
             font-family: 'Outfit', sans-serif; font-size: clamp(1.6rem, 5vw, 2.1rem); font-weight: 900;
             color: #ffffff; margin: 0 0 6px 0; letter-spacing: -0.5px; line-height: 1.1;
         }
-        .screen-title span { color: var(--cyber-blue); }
+        .screen-title span { color: var(--sampath-orange); }
 
         .screen-desc {
-            font-size: clamp(0.82rem, 2.5vw, 0.92rem); opacity: 0.85; max-width: 360px; line-height: 1.4;
+            font-size: clamp(0.82rem, 2.5vw, 0.92rem); opacity: 0.85; max-width: 380px; line-height: 1.4;
             margin-bottom: 12px;
         }
 
         .guide-box {
-            display: flex; gap: 12px; margin-bottom: 14px; max-width: 360px; width: 100%; box-sizing: border-box;
+            display: flex; gap: 12px; margin-bottom: 14px; max-width: 380px; width: 100%; box-sizing: border-box;
         }
         .guide-col {
             flex: 1; background: rgba(255, 255, 255, 0.04);
@@ -149,11 +149,11 @@
         .guide-col.safe { border-color: rgba(0, 255, 136, 0.35); }
 
         .btn-start {
-            background: linear-gradient(135deg, #f37021 0%, #00f2ff 100%);
+            background: linear-gradient(135deg, #f37021 0%, #ffd700 100%);
             color: white; border: none; padding: 13px 38px; font-size: 1.05rem;
             font-weight: 800; font-family: 'Outfit', sans-serif;
             border-radius: 50px; cursor: pointer;
-            box-shadow: 0 10px 30px var(--cyber-blue-glow);
+            box-shadow: 0 10px 30px rgba(243, 112, 33, 0.5);
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .btn-start:hover { transform: translateY(-2px) scale(1.03); }
@@ -178,36 +178,36 @@
 
         <div id="startScreen" class="screen">
             <img src="../../brand/vishwa-logo.png" alt="Sampath Vishwa" class="game-logo-large">
-            <div class="badge-kiosk">🛡 Full-Body Pose & Arm Shield</div>
-            <h1 class="screen-title">Biometric <span>Defense</span></h1>
+            <div class="badge-kiosk">⚔️ Full-Body Cyber-Knight Combat</div>
+            <h1 class="screen-title">Vishwa <span>Knight</span></h1>
             <p class="screen-desc">
-                Experience Sampath Vishwa’s multi-layer biometric protection. Move and raise your arms to generate a high-energy cyber shield.
+                Channel the legendary armor of the Vishwa Knight! Swing your Sampath Sword to strike down Phishing & Malware threats, and guard your Punkalasa core.
             </p>
 
             <div class="guide-box">
                 <div class="guide-col threat">
-                    <div style="font-size: 1.4rem;">🟥</div>
-                    <b style="color: var(--danger-red); font-size: 0.85rem;">DEFLECT THREATS</b>
-                    <div style="font-size: 0.72rem; opacity: 0.7; margin-top: 4px;">Phishing, Fake SMS, Malware</div>
+                    <div style="font-size: 1.4rem;">⚔️</div>
+                    <b style="color: var(--danger-red); font-size: 0.85rem;">SWING SWORD TO SLICE</b>
+                    <div style="font-size: 0.72rem; opacity: 0.7; margin-top: 4px;">Strike Phishing, Malware (+250)</div>
                 </div>
                 <div class="guide-col safe">
-                    <div style="font-size: 1.4rem;">🟢</div>
-                    <b style="color: var(--success-green); font-size: 0.85rem;">ABSORB TOKENS</b>
-                    <div style="font-size: 0.72rem; opacity: 0.7; margin-top: 4px;">OTP Verified, Bio Match</div>
+                    <div style="font-size: 1.4rem;">🛡</div>
+                    <b style="color: var(--success-green); font-size: 0.85rem;">ABSORB TO CORE</b>
+                    <div style="font-size: 0.72rem; opacity: 0.7; margin-top: 4px;">OTP Verified, Bio Match (+200)</div>
                 </div>
             </div>
 
-            <button class="btn-start" onclick="startGame()">INITIALIZE DEFENSE</button>
+            <button class="btn-start" onclick="startGame()">ENTER THE BATTLE</button>
         </div>
 
         <div id="gameOverScreen" class="screen hidden">
             <img src="../../brand/sampath-punkalasa.png" alt="Sampath Vishwa" style="width: 50px; height: 50px; margin-bottom: 10px;">
-            <div class="badge-kiosk" style="border-color: rgba(255, 62, 62, 0.4); color: var(--danger-red); background: rgba(255, 62, 62, 0.1); margin-bottom: 6px;">Security Assessment Finished</div>
-            <h1 class="screen-title" style="color: var(--cyber-blue); margin-bottom: 4px;">Account Secured!</h1>
-            <p class="screen-desc" style="margin-bottom: 10px;">Sampath Vishwa safeguards your financial identity 24/7.</p>
-            <div style="font-size: 0.75rem; letter-spacing: 2px; opacity: 0.7; margin-top: 6px;">DEFENSE RATING</div>
+            <div class="badge-kiosk" style="border-color: rgba(255, 62, 62, 0.4); color: var(--danger-red); background: rgba(255, 62, 62, 0.1); margin-bottom: 6px;">Battle Concluded</div>
+            <h1 class="screen-title" style="color: var(--cyber-blue); margin-bottom: 4px;">Kingdom Defended!</h1>
+            <p class="screen-desc" style="margin-bottom: 10px;">Sampath Vishwa safeguards your financial kingdom 24/7.</p>
+            <div style="font-size: 0.75rem; letter-spacing: 2px; opacity: 0.7; margin-top: 6px;">DEFENSE SCORE</div>
             <div id="finalScore" style="font-family: 'Outfit', sans-serif; font-size: clamp(2.8rem, 8vw, 3.8rem); font-weight: 900; color: white; line-height: 1.1; text-shadow: 0 0 25px var(--cyber-blue-glow);">0</div>
-            <button class="btn-start" onclick="location.reload()" style="margin-top: 14px;">RE-INITIALIZE</button>
+            <button class="btn-start" onclick="location.reload()" style="margin-top: 14px;">RE-ENTER BATTLE</button>
         </div>
     </div>
 
@@ -225,11 +225,6 @@
     let isMuted = false;
 
     // Preload Sampath Brand Assets
-    const basketImg = new Image();
-    basketImg.src = '../../brand/sampath-basket.png';
-    let basketLoaded = false;
-    basketImg.onload = () => { basketLoaded = true; };
-
     const punkalasaImg = new Image();
     punkalasaImg.src = '../../brand/sampath-punkalasa.png';
     let punkalasaLoaded = false;
@@ -240,9 +235,14 @@
     let vishwaLoaded = false;
     vishwaLogoImg.onload = () => { vishwaLoaded = true; };
 
-    let bucketFlash = 0;      // Flashes emerald/gold on absorbing safe tokens
-    let threatFlash = 0;      // Flashes red when threat breaches unshielded
-    let bucketParticles = [];  // Sparkles & rings when tokens are absorbed
+    // Combat & Armor States
+    let coreFlash = 0;        // Flashes emerald when credentials absorb into the Punkalasa core
+    let threatFlash = 0;      // Flashes red when knight takes body damage
+    let coreParticles = [];   // Sparkles when credentials absorb into chest core
+    let slashParticles = [];  // Sparks and arcs when sword slices threats
+    let floatingTexts = [];   // Floating score indicators ("SLICED! +250")
+    let swordTrail = [];      // Motion ribbon history for sword blade
+    let prevSword = null;     // For swept collision detection
 
     let audioCtx = null;
     function getAudioContext() {
@@ -264,6 +264,61 @@
             gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
             osc.start(); osc.stop(ctx.currentTime + duration);
         } catch (e) { console.warn(e); }
+    }
+
+    function playSwordSliceSound() {
+        if (isMuted) return;
+        try {
+            const ctx = getAudioContext();
+            if (ctx.state === 'suspended') ctx.resume();
+            
+            // High-frequency downward metallic whoosh
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(1400, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + 0.18);
+            
+            gain.gain.setValueAtTime(0.18, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.18);
+
+            // Resonant sword steel ring
+            const oscRing = ctx.createOscillator();
+            const gainRing = ctx.createGain();
+            oscRing.type = 'sine';
+            oscRing.frequency.setValueAtTime(1850, ctx.currentTime);
+            oscRing.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.28);
+            gainRing.gain.setValueAtTime(0.1, ctx.currentTime);
+            gainRing.gain.exponentialRampToValueAtTime(0.005, ctx.currentTime + 0.28);
+            oscRing.connect(gainRing);
+            gainRing.connect(ctx.destination);
+            oscRing.start();
+            oscRing.stop(ctx.currentTime + 0.28);
+        } catch(e){}
+    }
+
+    function playParrySound() {
+        if (isMuted) return;
+        try {
+            const ctx = getAudioContext();
+            if (ctx.state === 'suspended') ctx.resume();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(900, ctx.currentTime);
+            osc.frequency.setValueAtTime(1350, ctx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.14, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.22);
+        } catch(e){}
     }
 
     const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
@@ -303,8 +358,9 @@
         document.getElementById('startScreen').classList.add('hidden');
         gameActive = true;
         lives = 3;
+        score = 0;
         updateShieldUI();
-        playSound(700, 'sine', 0.4);
+        playSwordSliceSound();
         timeLeft = 60;
         window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: '01:00' }, '*');
         timerInterval = setInterval(() => {
@@ -323,21 +379,70 @@
     function spawnObject() {
         if (!gameActive) return;
         const isSafe = Math.random() > 0.45;
-        const labels = isSafe ? ["OTP Verified", "Bio Match", "Safe Transfer"] : ["Phishing", "Malware", "Fake SMS"];
+        const labels = isSafe ? ["OTP Verified", "Bio Match", "Safe Transfer"] : ["Phishing", "Malware", "Fake SMS", "Ransomware"];
         
+        const side = Math.random() > 0.5 ? 1 : -1;
         objects.push({
-            x: Math.random() > 0.5 ? -40 : canvasElement.width + 40,
-            y: 80 + Math.random() * (canvasElement.height / 2),
+            x: side > 0 ? -40 : canvasElement.width + 40,
+            y: 70 + Math.random() * (canvasElement.height * 0.55),
             vx: 0, vy: 0,
             targetX: canvasElement.width / 2,
             targetY: canvasElement.height / 2,
             type: isSafe ? 'SAFE' : 'THREAT',
             label: labels[Math.floor(Math.random() * labels.length)],
-            speed: 3.5 + Math.random() * 3.5,
-            deflected: false
+            speed: 3.2 + Math.random() * 3.4,
+            deflected: false,
+            rotation: 0,
+            rotSpeed: 0
         });
     }
-    setInterval(spawnObject, 1200);
+    setInterval(spawnObject, 1100);
+
+    function spawnSlashSparks(x, y, angle) {
+        for (let i = 0; i < 20; i++) {
+            const spread = (Math.random() - 0.5) * 1.8;
+            const spd = 4 + Math.random() * 9;
+            slashParticles.push({
+                x: x,
+                y: y,
+                vx: Math.cos(angle + spread) * spd,
+                vy: Math.sin(angle + spread) * spd,
+                size: 2.5 + Math.random() * 4,
+                color: Math.random() > 0.4 ? '#00f2ff' : '#f37021',
+                alpha: 1.0,
+                decay: 0.03 + Math.random() * 0.03
+            });
+        }
+    }
+
+    function spawnCoreParticles(x, y) {
+        for (let i = 0; i < 16; i++) {
+            const ang = Math.random() * Math.PI * 2;
+            const spd = 2 + Math.random() * 4;
+            coreParticles.push({
+                x: x + (Math.random() - 0.5) * 20,
+                y: y + (Math.random() - 0.5) * 20,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd - 1.2,
+                size: 3 + Math.random() * 4,
+                color: Math.random() > 0.4 ? '#00ff88' : '#ffd700',
+                alpha: 1.0,
+                decay: 0.03 + Math.random() * 0.02
+            });
+        }
+    }
+
+    function spawnFloatingText(text, x, y, color) {
+        floatingTexts.push({
+            text: text,
+            x: x,
+            y: y,
+            vy: -2.2,
+            color: color,
+            alpha: 1.0,
+            scale: 1.2
+        });
+    }
 
     function draw(image) {
         if (canvasElement.width !== canvasElement.clientWidth || canvasElement.height !== canvasElement.clientHeight) {
@@ -357,9 +462,13 @@
         }
         canvasCtx.restore();
 
+        // Smooth flashes decay
+        if (coreFlash > 0) coreFlash = Math.max(0, coreFlash - 0.04);
+        if (threatFlash > 0) threatFlash = Math.max(0, threatFlash - 0.04);
+
         if (!poseData) return;
 
-        // 2. Torso Coordinates & Sampath Basket Dimensions
+        // 2. Body Landmarks Extraction
         const leftShoulder = poseData[11];
         const rightShoulder = poseData[12];
         const sh1X = (1 - leftShoulder.x) * canvasElement.width;
@@ -371,127 +480,172 @@
         const shoulderMidX = (sh1X + sh2X) / 2;
         const shoulderMidY = (sh1Y + sh2Y) / 2;
 
-        const basketWidth = Math.max(220, shoulderDist * 1.35);
-        const basketHeight = basketWidth * (596 / 835);
-        const basketCenterX = shoulderMidX;
-        const basketTopY = shoulderMidY + shoulderDist * 0.15;
-        const basketX = basketCenterX - basketWidth / 2;
-        const basketY = basketTopY;
+        // The Knight's Punkalasa Core position on chestplate
+        const coreX = shoulderMidX;
+        const coreY = shoulderMidY + shoulderDist * 0.28;
 
-        // Draw the authentic Sampath Vishwa woven basket on torso
-        drawSampathBasket(basketCenterX, basketX, basketY, basketWidth, basketHeight);
+        // 3. Draw Knight Armor Overlay (Cuirass, Pauldrons, Punkalasa Core)
+        drawKnightArmor(sh1X, sh1Y, sh2X, sh2Y, shoulderDist, shoulderMidX, shoulderMidY, coreX, coreY);
 
-        // Draw refined facial scan reticle
-        drawBiometricFaceScan();
-
-        // 3. Wrist Shield Tracking
-        const leftWrist = poseData[15];
-        const rightWrist = poseData[16];
-
-        const shield = {
-            x1: (1 - leftWrist.x) * canvasElement.width,
-            y1: leftWrist.y * canvasElement.height,
-            x2: (1 - rightWrist.x) * canvasElement.width,
-            y2: rightWrist.y * canvasElement.height
-        };
-
-        // Render Hex Shield
-        if (gameActive) {
-            canvasCtx.save();
-            canvasCtx.beginPath();
-            canvasCtx.strokeStyle = '#00f2ff';
-            canvasCtx.lineWidth = 14;
-            canvasCtx.lineCap = 'round';
-            canvasCtx.shadowBlur = 25; canvasCtx.shadowColor = 'rgba(0, 242, 255, 0.8)';
-            canvasCtx.moveTo(shield.x1, shield.y1);
-            canvasCtx.lineTo(shield.x2, shield.y2);
-            canvasCtx.stroke();
-            
-            // Core laser line
-            canvasCtx.beginPath();
-            canvasCtx.strokeStyle = '#ffffff';
-            canvasCtx.lineWidth = 4;
-            canvasCtx.moveTo(shield.x1, shield.y1);
-            canvasCtx.lineTo(shield.x2, shield.y2);
-            canvasCtx.stroke();
-            
-            // Energy Field
-            canvasCtx.globalAlpha = 0.2;
-            canvasCtx.fillStyle = '#00f2ff';
-            canvasCtx.beginPath();
-            canvasCtx.moveTo(shield.x1, shield.y1);
-            canvasCtx.lineTo(shield.x2, shield.y2);
-            canvasCtx.lineTo(shield.x2, shield.y2 + 45);
-            canvasCtx.lineTo(shield.x1, shield.y1 + 45);
-            canvasCtx.closePath();
-            canvasCtx.fill();
-            canvasCtx.restore();
+        // 4. Draw Knight Cyber-Helmet / Visor over head
+        const nose = poseData[0];
+        if (nose) {
+            const noseX = (1 - nose.x) * canvasElement.width;
+            const noseY = nose.y * canvasElement.height;
+            drawKnightHelmet(noseX, noseY, shoulderDist);
         }
 
-        // Render Absorption Sparkles
-        for (let i = bucketParticles.length - 1; i >= 0; i--) {
-            const p = bucketParticles[i];
-            p.x += p.vx;
-            p.y += p.vy;
-            p.alpha -= p.decay;
-            if (p.alpha <= 0) {
-                bucketParticles.splice(i, 1);
-                continue;
-            }
+        // 5. Draw Left Arm Aegis Energy Shield
+        const leftWrist = poseData[15];
+        const leftElbow = poseData[13];
+        let aegisShield = null;
+        if (leftWrist && leftElbow) {
+            const lwX = (1 - leftWrist.x) * canvasElement.width;
+            const lwY = leftWrist.y * canvasElement.height;
+            const leX = (1 - leftElbow.x) * canvasElement.width;
+            const leY = leftElbow.y * canvasElement.height;
+            aegisShield = drawAegisShield(lwX, lwY, leX, leY, shoulderDist);
+        }
+
+        // 6. Draw Legendary Sampath Vishwa Knight Sword (Wielded in Right Hand)
+        const rightWrist = poseData[16];
+        const rightElbow = poseData[14];
+        const rightIndex = poseData[20];
+        let swordSeg = null;
+
+        if (rightWrist && rightElbow) {
+            const rwX = (1 - rightWrist.x) * canvasElement.width;
+            const rwY = rightWrist.y * canvasElement.height;
+            const reX = (1 - rightElbow.x) * canvasElement.width;
+            const reY = rightElbow.y * canvasElement.height;
+            const riX = rightIndex ? (1 - rightIndex.x) * canvasElement.width : rwX;
+            const riY = rightIndex ? rightIndex.y * canvasElement.height : rwY;
+
+            swordSeg = drawKnightSword(rwX, rwY, reX, reY, riX, riY, shoulderDist);
+        }
+
+        // 7. Update and Render Particles
+        // Slash sparks
+        for (let i = slashParticles.length - 1; i >= 0; i--) {
+            const p = slashParticles[i];
+            p.x += p.vx; p.y += p.vy; p.alpha -= p.decay;
+            if (p.alpha <= 0) { slashParticles.splice(i, 1); continue; }
             canvasCtx.save();
             canvasCtx.globalAlpha = p.alpha;
             canvasCtx.fillStyle = p.color;
-            canvasCtx.shadowBlur = 10;
-            canvasCtx.shadowColor = p.color;
+            canvasCtx.shadowBlur = 10; canvasCtx.shadowColor = p.color;
             canvasCtx.beginPath();
             canvasCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
             canvasCtx.fill();
             canvasCtx.restore();
         }
 
+        // Core absorption sparkles
+        for (let i = coreParticles.length - 1; i >= 0; i--) {
+            const p = coreParticles[i];
+            p.x += p.vx; p.y += p.vy; p.alpha -= p.decay;
+            if (p.alpha <= 0) { coreParticles.splice(i, 1); continue; }
+            canvasCtx.save();
+            canvasCtx.globalAlpha = p.alpha;
+            canvasCtx.fillStyle = p.color;
+            canvasCtx.shadowBlur = 12; canvasCtx.shadowColor = p.color;
+            canvasCtx.beginPath();
+            canvasCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            canvasCtx.fill();
+            canvasCtx.restore();
+        }
+
+        // Floating combat texts
+        for (let i = floatingTexts.length - 1; i >= 0; i--) {
+            const ft = floatingTexts[i];
+            ft.y += ft.vy;
+            ft.alpha -= 0.024;
+            if (ft.alpha <= 0) { floatingTexts.splice(i, 1); continue; }
+            canvasCtx.save();
+            canvasCtx.globalAlpha = ft.alpha;
+            canvasCtx.font = '900 13px "Outfit", sans-serif';
+            canvasCtx.fillStyle = ft.color;
+            canvasCtx.shadowBlur = 8;
+            canvasCtx.shadowColor = ft.color;
+            canvasCtx.textAlign = 'center';
+            canvasCtx.fillText(ft.text, ft.x, ft.y);
+            canvasCtx.restore();
+        }
+
         if (!gameActive) return;
 
-        // 4. Object Logic: Objects home directly into the mouth of the Sampath Basket
-        const targetX = basketCenterX;
-        const targetY = basketY + basketHeight * 0.28;
+        // 8. Combat & Threat Hitting Mechanics
+        const targetX = coreX;
+        const targetY = coreY;
 
         objects.forEach((obj, index) => {
             if (!obj.deflected) {
-                const angle = Math.atan2(targetY - obj.y, targetX - obj.x);
-                obj.x += Math.cos(angle) * obj.speed;
-                obj.y += Math.sin(angle) * obj.speed;
+                const angleToCore = Math.atan2(targetY - obj.y, targetX - obj.x);
+                obj.x += Math.cos(angleToCore) * obj.speed;
+                obj.y += Math.sin(angleToCore) * obj.speed;
 
-                // Shield Collision
-                const distToShield = distToSegment(obj.x, obj.y, shield.x1, shield.y1, shield.x2, shield.y2);
-                if (distToShield < 50) {
-                    if (obj.type === 'THREAT') {
+                // A. SWORD HIT COLLISION (The player swings the sword to slice threats)
+                if (swordSeg && obj.type === 'THREAT') {
+                    const distToSword = distToSegment(obj.x, obj.y, swordSeg.x1, swordSeg.y1, swordSeg.x2, swordSeg.y2);
+                    
+                    // Swept check between previous frame sword tip and current sword tip
+                    let sweptHit = false;
+                    if (prevSword) {
+                        const distSwept = distToSegment(obj.x, obj.y, prevSword.x2, prevSword.y2, swordSeg.x2, swordSeg.y2);
+                        if (distSwept < 50) sweptHit = true;
+                    }
+
+                    if (distToSword < 52 || sweptHit) {
+                        // THREAT SLICED BY THE SAMPATH VISHWA SWORD!
                         obj.deflected = true;
-                        obj.vx = (obj.x - targetX) * 0.15;
-                        obj.vy = -9;
-                        playSound(1200, 'sawtooth', 0.25);
-                        score += 150;
-                        const ratingLabel = document.getElementById('ratingLabel');
-                        if (ratingLabel) ratingLabel.innerText = score;
+                        obj.rotSpeed = 0.25;
+                        const cutAngle = swordSeg.angle + Math.PI / 2;
+                        obj.vx = Math.cos(cutAngle) * 12;
+                        obj.vy = Math.sin(cutAngle) * 12 - 4;
+
+                        playSwordSliceSound();
+                        spawnSlashSparks(obj.x, obj.y, swordSeg.angle);
+                        score += 250;
+                        spawnFloatingText("⚔️ SLICED! +250", obj.x, obj.y - 15, '#00f2ff');
                         window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: score }, '*');
+                        return;
                     }
                 }
 
-                // Basket Mouth Absorption Collision
-                const distToTarget = Math.hypot(obj.x - targetX, obj.y - targetY);
-                if (distToTarget < Math.max(55, basketWidth * 0.32)) {
+                // B. AEGIS SHIELD PARRY COLLISION (Left arm block)
+                if (aegisShield && obj.type === 'THREAT') {
+                    const distToShield = Math.hypot(obj.x - aegisShield.cx, obj.y - aegisShield.cy);
+                    if (distToShield < aegisShield.radius) {
+                        obj.deflected = true;
+                        obj.vx = (obj.x - targetX) * 0.18;
+                        obj.vy = -10;
+                        playParrySound();
+                        spawnSlashSparks(obj.x, obj.y, -Math.PI / 2);
+                        score += 150;
+                        spawnFloatingText("🛡 PARRIED! +150", obj.x, obj.y - 15, '#ffd700');
+                        window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: score }, '*');
+                        return;
+                    }
+                }
+
+                // C. TORSO PUNKALASA CORE COLLISION
+                const distToCore = Math.hypot(obj.x - targetX, obj.y - targetY);
+                if (distToCore < Math.max(50, shoulderDist * 0.26)) {
                     if (obj.type === 'THREAT') {
+                        // Threat breached the knight's armor!
                         lives--;
                         threatFlash = 1.0;
-                        playSound(160, 'square', 0.4);
+                        playSound(130, 'square', 0.4);
+                        spawnFloatingText("⚠️ SHIELD BREACHED!", targetX, targetY - 30, '#ff3e3e');
                         updateShieldUI();
                         if (lives <= 0) endGame();
                     } else {
+                        // Safe credential absorbed into Punkalasa Core!
                         score += 200;
-                        bucketFlash = 1.0;
-                        spawnBucketParticles(targetX, targetY);
-                        playSound(950, 'sine', 0.2);
-                        const ratingLabel = document.getElementById('ratingLabel');
-                        if (ratingLabel) ratingLabel.innerText = score;
+                        coreFlash = 1.0;
+                        spawnCoreParticles(targetX, targetY);
+                        playSound(980, 'sine', 0.22);
+                        spawnFloatingText("✨ SECURED! +200", targetX, targetY - 30, '#00ff88');
                         window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: score }, '*');
                     }
                     objects.splice(index, 1);
@@ -500,158 +654,508 @@
             } else {
                 obj.x += obj.vx;
                 obj.y += obj.vy;
+                obj.rotation += obj.rotSpeed;
             }
 
             drawSecurityObject(obj);
-            if (obj.y < -100 || obj.y > canvasElement.height + 100) objects.splice(index, 1);
+            if (obj.y < -120 || obj.y > canvasElement.height + 120 || obj.x < -120 || obj.x > canvasElement.width + 120) {
+                objects.splice(index, 1);
+            }
         });
+
+        prevSword = swordSeg ? { ...swordSeg } : null;
     }
 
-    function spawnBucketParticles(x, y) {
-        for (let i = 0; i < 14; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const speed = 1.2 + Math.random() * 3.2;
-            bucketParticles.push({
-                x: x + (Math.random() - 0.5) * 30,
-                y: y + (Math.random() - 0.5) * 12,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed - 1.2,
-                size: 3 + Math.random() * 4,
-                color: Math.random() > 0.35 ? '#00ff88' : '#f37021',
-                alpha: 1.0,
-                decay: 0.028 + Math.random() * 0.02
-            });
-        }
-    }
-
-    function drawSampathBasket(cx, basketX, basketY, basketWidth, basketHeight) {
+    // ==========================================
+    // RENDER: CYBER-KNIGHT ARMOR & PUNKALASA CORE
+    // ==========================================
+    function drawKnightArmor(sh1X, sh1Y, sh2X, sh2Y, shoulderDist, midX, midY, coreX, coreY) {
         canvasCtx.save();
 
-        // Smoothly decay flashes
-        if (bucketFlash > 0) bucketFlash = Math.max(0, bucketFlash - 0.04);
-        if (threatFlash > 0) threatFlash = Math.max(0, threatFlash - 0.04);
+        // 1. Cuirass / Breastplate Body Shell
+        const chestW = shoulderDist * 0.95;
+        const chestH = shoulderDist * 0.92;
+        const chestTop = midY - 6;
 
-        // Center of the inner opening mouth where items drop in
-        const mouthX = cx;
-        const mouthY = basketY + basketHeight * 0.28;
-        const mouthRx = basketWidth * 0.30;
-        const mouthRy = basketHeight * 0.16;
-
-        // 1. Inner Glowing Deposit Vortex (Depth inside the open basket)
         canvasCtx.save();
-        const vortex = canvasCtx.createRadialGradient(mouthX, mouthY, 4, mouthX, mouthY, mouthRx);
-        if (bucketFlash > 0.05) {
-            vortex.addColorStop(0, `rgba(0, 255, 136, ${0.75 + bucketFlash * 0.25})`);
-            vortex.addColorStop(0.5, `rgba(243, 112, 33, ${0.4 + bucketFlash * 0.3})`);
-            vortex.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        } else if (threatFlash > 0.05) {
-            vortex.addColorStop(0, `rgba(255, 62, 62, ${0.8 + threatFlash * 0.2})`);
-            vortex.addColorStop(0.6, 'rgba(255, 62, 62, 0.3)');
-            vortex.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        } else {
-            vortex.addColorStop(0, 'rgba(243, 112, 33, 0.55)');
-            vortex.addColorStop(0.5, 'rgba(0, 242, 255, 0.25)');
-            vortex.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        }
-        canvasCtx.fillStyle = vortex;
         canvasCtx.beginPath();
-        canvasCtx.ellipse(mouthX, mouthY, mouthRx, mouthRy, 0, 0, Math.PI * 2);
+        canvasCtx.moveTo(midX - chestW * 0.45, chestTop);
+        canvasCtx.lineTo(midX + chestW * 0.45, chestTop);
+        canvasCtx.lineTo(midX + chestW * 0.35, chestTop + chestH * 0.6);
+        canvasCtx.lineTo(midX, chestTop + chestH);
+        canvasCtx.lineTo(midX - chestW * 0.35, chestTop + chestH * 0.6);
+        canvasCtx.closePath();
+
+        // Breastplate metallic gradient
+        const chestGrad = canvasCtx.createLinearGradient(midX, chestTop, midX, chestTop + chestH);
+        if (threatFlash > 0.05) {
+            chestGrad.addColorStop(0, `rgba(180, 20, 20, ${0.85 + threatFlash * 0.15})`);
+            chestGrad.addColorStop(1, 'rgba(40, 5, 5, 0.95)');
+        } else {
+            chestGrad.addColorStop(0, 'rgba(20, 32, 54, 0.88)');
+            chestGrad.addColorStop(0.5, 'rgba(12, 18, 34, 0.92)');
+            chestGrad.addColorStop(1, 'rgba(5, 10, 20, 0.96)');
+        }
+        canvasCtx.fillStyle = chestGrad;
+        canvasCtx.fill();
+
+        // Beveled gold seams and neon cyan contour trim
+        canvasCtx.lineWidth = 2.5;
+        canvasCtx.strokeStyle = threatFlash > 0.05 ? '#ff3e3e' : '#f37021';
+        canvasCtx.shadowBlur = threatFlash > 0.05 ? 18 : 10;
+        canvasCtx.shadowColor = threatFlash > 0.05 ? '#ff3e3e' : '#f37021';
+        canvasCtx.stroke();
+        canvasCtx.restore();
+
+        // 2. Pauldrons (Sculpted Shoulder Armor on Left and Right)
+        [ { x: sh1X, y: sh1Y, dir: -1 }, { x: sh2X, y: sh2Y, dir: 1 } ].forEach(p => {
+            canvasCtx.save();
+            canvasCtx.translate(p.x, p.y);
+            const pW = shoulderDist * 0.36;
+            const pH = shoulderDist * 0.28;
+
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(0, -pH * 0.5);
+            canvasCtx.lineTo(p.dir * pW, -pH * 0.2);
+            canvasCtx.lineTo(p.dir * pW * 0.85, pH * 0.6);
+            canvasCtx.lineTo(0, pH * 0.4);
+            canvasCtx.closePath();
+
+            const pGrad = canvasCtx.createLinearGradient(0, -pH * 0.5, p.dir * pW, pH * 0.6);
+            pGrad.addColorStop(0, 'rgba(30, 48, 80, 0.9)');
+            pGrad.addColorStop(1, 'rgba(8, 14, 28, 0.95)');
+            canvasCtx.fillStyle = pGrad;
+            canvasCtx.fill();
+
+            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeStyle = '#ffd700';
+            canvasCtx.shadowBlur = 8;
+            canvasCtx.shadowColor = '#ffd700';
+            canvasCtx.stroke();
+
+            // Glowing cyan power vent node
+            canvasCtx.beginPath();
+            canvasCtx.arc(p.dir * pW * 0.4, 0, 4, 0, Math.PI * 2);
+            canvasCtx.fillStyle = '#00f2ff';
+            canvasCtx.shadowBlur = 10;
+            canvasCtx.shadowColor = '#00f2ff';
+            canvasCtx.fill();
+            canvasCtx.restore();
+        });
+
+        // 3. The Punkalasa Heart Core (Central Power Core that absorbs safe tokens)
+        const coreR = Math.max(26, shoulderDist * 0.20);
+        canvasCtx.save();
+        
+        // Pulsing energy vortex ring
+        const pulse = Math.sin(Date.now() / 220) * 3;
+        const auraGrad = canvasCtx.createRadialGradient(coreX, coreY, 2, coreX, coreY, coreR + pulse);
+        if (coreFlash > 0.05) {
+            auraGrad.addColorStop(0, `rgba(0, 255, 136, ${0.9 + coreFlash * 0.1})`);
+            auraGrad.addColorStop(0.6, 'rgba(243, 112, 33, 0.5)');
+            auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        } else if (threatFlash > 0.05) {
+            auraGrad.addColorStop(0, `rgba(255, 62, 62, ${0.9 + threatFlash * 0.1})`);
+            auraGrad.addColorStop(0.6, 'rgba(255, 62, 62, 0.4)');
+            auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        } else {
+            auraGrad.addColorStop(0, 'rgba(243, 112, 33, 0.7)');
+            auraGrad.addColorStop(0.6, 'rgba(0, 242, 255, 0.25)');
+            auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        }
+        canvasCtx.fillStyle = auraGrad;
+        canvasCtx.beginPath();
+        canvasCtx.arc(coreX, coreY, coreR + pulse + 6, 0, Math.PI * 2);
+        canvasCtx.fill();
+
+        // Core metallic border ring
+        canvasCtx.beginPath();
+        canvasCtx.arc(coreX, coreY, coreR, 0, Math.PI * 2);
+        canvasCtx.fillStyle = 'rgba(4, 9, 22, 0.94)';
+        canvasCtx.fill();
+        canvasCtx.lineWidth = 2.5;
+        canvasCtx.strokeStyle = coreFlash > 0.05 ? '#00ff88' : '#ffd700';
+        canvasCtx.shadowBlur = 12;
+        canvasCtx.shadowColor = coreFlash > 0.05 ? '#00ff88' : '#ffd700';
+        canvasCtx.stroke();
+
+        // Render Official Sampath Punkalasa inside the core
+        if (punkalasaLoaded && punkalasaImg.complete) {
+            const logoSize = coreR * 1.35;
+            canvasCtx.drawImage(punkalasaImg, coreX - logoSize / 2, coreY - logoSize / 2, logoSize, logoSize);
+        }
+
+        // Bouncing core guidance tag
+        if (gameActive) {
+            const b = Math.sin(Date.now() / 180) * 3;
+            canvasCtx.font = 'bold 9px "Outfit", sans-serif';
+            canvasCtx.textAlign = 'center';
+            canvasCtx.fillStyle = coreFlash > 0.05 ? '#00ff88' : '#00f2ff';
+            canvasCtx.shadowBlur = 6;
+            canvasCtx.shadowColor = coreFlash > 0.05 ? '#00ff88' : '#00f2ff';
+            canvasCtx.fillText('▼ PUNKALASA CORE ▼', coreX, coreY - coreR - 8 + b);
+        }
+        canvasCtx.restore();
+
+        canvasCtx.restore();
+    }
+
+    // ==========================================
+    // RENDER: CYBER-KNIGHT HELMET / VISOR
+    // ==========================================
+    function drawKnightHelmet(noseX, noseY, shoulderDist) {
+        canvasCtx.save();
+        const helmW = shoulderDist * 0.42;
+        const helmH = helmW * 1.25;
+        const helmCenterY = noseY - helmH * 0.15;
+
+        canvasCtx.translate(noseX, helmCenterY);
+
+        // 1. Knight Helm Silhouette
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(-helmW * 0.48, -helmH * 0.25);
+        canvasCtx.lineTo(-helmW * 0.35, -helmH * 0.55);
+        canvasCtx.lineTo(0, -helmH * 0.65); // Crown tip
+        canvasCtx.lineTo(helmW * 0.35, -helmH * 0.55);
+        canvasCtx.lineTo(helmW * 0.48, -helmH * 0.25);
+        canvasCtx.lineTo(helmW * 0.42, helmH * 0.25);
+        canvasCtx.lineTo(0, helmH * 0.55); // Chin guard
+        canvasCtx.lineTo(-helmW * 0.42, helmH * 0.25);
+        canvasCtx.closePath();
+
+        const helmGrad = canvasCtx.createLinearGradient(0, -helmH * 0.65, 0, helmH * 0.55);
+        helmGrad.addColorStop(0, 'rgba(28, 44, 72, 0.92)');
+        helmGrad.addColorStop(0.5, 'rgba(14, 22, 40, 0.95)');
+        helmGrad.addColorStop(1, 'rgba(6, 12, 24, 0.98)');
+        canvasCtx.fillStyle = helmGrad;
+        canvasCtx.fill();
+
+        canvasCtx.lineWidth = 2.2;
+        canvasCtx.strokeStyle = '#ffd700';
+        canvasCtx.shadowBlur = 10;
+        canvasCtx.shadowColor = '#ffd700';
+        canvasCtx.stroke();
+
+        // 2. Crown Crest Wing Plume
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(-helmW * 0.12, -helmH * 0.58);
+        canvasCtx.lineTo(0, -helmH * 0.85);
+        canvasCtx.lineTo(helmW * 0.12, -helmH * 0.58);
+        canvasCtx.closePath();
+        canvasCtx.fillStyle = '#f37021';
+        canvasCtx.shadowBlur = 8;
+        canvasCtx.shadowColor = '#f37021';
+        canvasCtx.fill();
+
+        // 3. Glowing Cyber-Visor Eye Slit
+        const visorY = -helmH * 0.08;
+        const visorW = helmW * 0.68;
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(-visorW / 2, visorY);
+        canvasCtx.lineTo(-visorW * 0.42, visorY - 6);
+        canvasCtx.lineTo(0, visorY - 3);
+        canvasCtx.lineTo(visorW * 0.42, visorY - 6);
+        canvasCtx.lineTo(visorW / 2, visorY);
+        canvasCtx.lineTo(visorW * 0.42, visorY + 6);
+        canvasCtx.lineTo(0, visorY + 3);
+        canvasCtx.lineTo(-visorW * 0.42, visorY + 6);
+        canvasCtx.closePath();
+
+        canvasCtx.fillStyle = '#00f2ff';
+        canvasCtx.shadowBlur = 16;
+        canvasCtx.shadowColor = '#00f2ff';
+        canvasCtx.fill();
+
+        // Inner neon visor laser slit
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(-visorW * 0.4, visorY);
+        canvasCtx.lineTo(visorW * 0.4, visorY);
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = '#ffffff';
+        canvasCtx.stroke();
+
+        // 4. Faceplate Breathing Slots
+        [-6, 0, 6].forEach(offset => {
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(offset, helmH * 0.22);
+            canvasCtx.lineTo(offset, helmH * 0.38);
+            canvasCtx.lineWidth = 1.6;
+            canvasCtx.strokeStyle = 'rgba(255, 215, 0, 0.65)';
+            canvasCtx.stroke();
+        });
+
+        canvasCtx.restore();
+    }
+
+    // ==========================================
+    // RENDER: LEGENDARY SAMPATH VISHWA SWORD
+    // ==========================================
+    function drawKnightSword(rwX, rwY, reX, reY, riX, riY, shoulderDist) {
+        // Compute sword orientation
+        let dx = rwX - reX;
+        let dy = rwY - reY;
+        let angle = Math.atan2(dy, dx);
+
+        // Responsive wrist aiming if index finger tracked
+        const handDist = Math.hypot(riX - rwX, riY - rwY);
+        if (handDist > 18) {
+            angle = Math.atan2(riY - rwY, riX - rwX);
+        }
+
+        const bladeLength = Math.max(220, shoulderDist * 1.55);
+        const gripX = rwX;
+        const gripY = rwY;
+        const tipX = gripX + Math.cos(angle) * bladeLength;
+        const tipY = gripY + Math.sin(angle) * bladeLength;
+
+        // Maintain sword motion trail
+        swordTrail.push({ tipX, tipY, gripX, gripY, time: Date.now() });
+        if (swordTrail.length > 10) swordTrail.shift();
+
+        // 1. Draw Sword Motion Slash Ribbon
+        if (swordTrail.length >= 2) {
+            canvasCtx.save();
+            for (let i = 0; i < swordTrail.length - 1; i++) {
+                const p1 = swordTrail[i];
+                const p2 = swordTrail[i + 1];
+                const alpha = (i / swordTrail.length) * 0.55;
+
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(p1.gripX, p1.gripY);
+                canvasCtx.lineTo(p1.tipX, p1.tipY);
+                canvasCtx.lineTo(p2.tipX, p2.tipY);
+                canvasCtx.lineTo(p2.gripX, p2.gripY);
+                canvasCtx.closePath();
+
+                canvasCtx.fillStyle = `rgba(0, 242, 255, ${alpha})`;
+                canvasCtx.shadowBlur = 14;
+                canvasCtx.shadowColor = '#00f2ff';
+                canvasCtx.fill();
+            }
+            canvasCtx.restore();
+        }
+
+        // 2. Draw the Sword Components
+        canvasCtx.save();
+        canvasCtx.translate(gripX, gripY);
+        canvasCtx.rotate(angle);
+
+        // A. Grip & Pommel (Behind crossguard, x < 0)
+        canvasCtx.save();
+        // Leather-bound hilt
+        canvasCtx.fillStyle = '#271b12';
+        canvasCtx.fillRect(-45, -6, 38, 12);
+        // Golden winding wire
+        canvasCtx.strokeStyle = '#ffd700';
+        canvasCtx.lineWidth = 1.2;
+        for (let gx = -42; gx <= -10; gx += 7) {
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(gx, -6);
+            canvasCtx.lineTo(gx + 3, 6);
+            canvasCtx.stroke();
+        }
+        // Pommel
+        canvasCtx.beginPath();
+        canvasCtx.arc(-52, 0, 9, 0, Math.PI * 2);
+        canvasCtx.fillStyle = '#d4af37';
+        canvasCtx.shadowBlur = 8;
+        canvasCtx.shadowColor = '#ffd700';
+        canvasCtx.fill();
+        // Pommel cyan gem
+        canvasCtx.beginPath();
+        canvasCtx.arc(-52, 0, 4, 0, Math.PI * 2);
+        canvasCtx.fillStyle = '#00f2ff';
         canvasCtx.fill();
         canvasCtx.restore();
 
-        // 2. Render the Realistic Sampath Vishwa Woven Basket
-        if (basketLoaded && basketImg.complete) {
+        // B. Blade (From x = 6 to x = bladeLength)
+        const bladeWidth = 24;
+        canvasCtx.save();
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(6, -bladeWidth / 2);
+        canvasCtx.lineTo(bladeLength - 30, -bladeWidth / 2);
+        canvasCtx.lineTo(bladeLength, 0); // Razor blade tip
+        canvasCtx.lineTo(bladeLength - 30, bladeWidth / 2);
+        canvasCtx.lineTo(6, bladeWidth / 2);
+        canvasCtx.closePath();
+
+        // Tempered Steel Metallic Gradient
+        const bladeGrad = canvasCtx.createLinearGradient(0, -bladeWidth / 2, 0, bladeWidth / 2);
+        bladeGrad.addColorStop(0, '#64748b');
+        bladeGrad.addColorStop(0.35, '#cbd5e1');
+        bladeGrad.addColorStop(0.5, '#ffffff'); // Specular center ridge
+        bladeGrad.addColorStop(0.65, '#94a3b8');
+        bladeGrad.addColorStop(1, '#334155');
+        canvasCtx.fillStyle = bladeGrad;
+        canvasCtx.fill();
+
+        // Glowing Plasma Laser Cutting Edges (Cyan & Sampath Orange)
+        canvasCtx.lineWidth = 2.5;
+        canvasCtx.strokeStyle = '#00f2ff';
+        canvasCtx.shadowBlur = 18;
+        canvasCtx.shadowColor = '#00f2ff';
+        canvasCtx.stroke();
+        canvasCtx.restore();
+
+        // C. OFFICIAL SAMPATH VISHWA LOGO (Etched along blade fuller)
+        if (vishwaLoaded && vishwaLogoImg.complete) {
+            const logoW = 86;
+            const logoH = logoW * (258 / 715);
+            const logoX = 26;
+            const logoY = -logoH / 2;
+
             canvasCtx.save();
-            if (bucketFlash > 0.05) {
-                canvasCtx.shadowColor = '#00ff88';
-                canvasCtx.shadowBlur = 30 * bucketFlash;
-            } else if (threatFlash > 0.05) {
-                canvasCtx.shadowColor = '#ff3e3e';
-                canvasCtx.shadowBlur = 30 * threatFlash;
-            } else {
-                canvasCtx.shadowColor = 'rgba(243, 112, 33, 0.55)';
-                canvasCtx.shadowBlur = 20;
-            }
-            canvasCtx.drawImage(basketImg, basketX, basketY, basketWidth, basketHeight);
+            // Dark glass backing slot for high readability
+            canvasCtx.fillStyle = 'rgba(2, 6, 18, 0.82)';
+            canvasCtx.fillRect(logoX - 3, logoY - 2, logoW + 6, logoH + 4);
+            canvasCtx.strokeStyle = 'rgba(243, 112, 33, 0.6)';
+            canvasCtx.lineWidth = 1;
+            canvasCtx.strokeRect(logoX - 3, logoY - 2, logoW + 6, logoH + 4);
+
+            canvasCtx.shadowBlur = 10;
+            canvasCtx.shadowColor = 'rgba(255, 215, 0, 0.7)';
+            canvasCtx.drawImage(vishwaLogoImg, logoX, logoY, logoW, logoH);
             canvasCtx.restore();
         }
 
-        // 3. Deposit Indicator Arrow (Bouncing chevron over basket opening)
-        if (gameActive) {
-            const bounce = Math.sin(Date.now() / 180) * 3;
-            canvasCtx.save();
-            canvasCtx.font = 'bold 10px "Outfit", sans-serif';
-            canvasCtx.textAlign = 'center';
-            canvasCtx.fillStyle = bucketFlash > 0.05 ? '#00ff88' : '#00f2ff';
-            canvasCtx.shadowBlur = 8;
-            canvasCtx.shadowColor = bucketFlash > 0.05 ? '#00ff88' : '#00f2ff';
-            canvasCtx.fillText('▼ DEPOSIT SECURE TOKENS ▼', cx, basketY - 6 + bounce);
-            canvasCtx.restore();
+        // D. Blade Tip Energy Spark
+        canvasCtx.save();
+        canvasCtx.beginPath();
+        canvasCtx.arc(bladeLength, 0, 5, 0, Math.PI * 2);
+        canvasCtx.fillStyle = '#ffffff';
+        canvasCtx.shadowBlur = 16;
+        canvasCtx.shadowColor = '#00f2ff';
+        canvasCtx.fill();
+        canvasCtx.restore();
+
+        // E. Sculpted Golden Crossguard (Quillon)
+        const guardSpan = 48;
+        canvasCtx.save();
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(-6, -guardSpan);
+        canvasCtx.lineTo(6, -guardSpan * 0.85);
+        canvasCtx.lineTo(8, -12);
+        canvasCtx.lineTo(8, 12);
+        canvasCtx.lineTo(6, guardSpan * 0.85);
+        canvasCtx.lineTo(-6, guardSpan);
+        canvasCtx.lineTo(-4, 0);
+        canvasCtx.closePath();
+
+        const guardGrad = canvasCtx.createLinearGradient(0, -guardSpan, 0, guardSpan);
+        guardGrad.addColorStop(0, '#f37021');
+        guardGrad.addColorStop(0.5, '#ffd700');
+        guardGrad.addColorStop(1, '#f37021');
+        canvasCtx.fillStyle = guardGrad;
+        canvasCtx.shadowBlur = 12;
+        canvasCtx.shadowColor = '#ffd700';
+        canvasCtx.fill();
+        canvasCtx.lineWidth = 1.5;
+        canvasCtx.strokeStyle = '#ffffff';
+        canvasCtx.stroke();
+
+        // F. OFFICIAL SAMPATH PUNKALASA LOGO ON CROSSGUARD MEDALLION
+        const medR = 15;
+        canvasCtx.beginPath();
+        canvasCtx.arc(0, 0, medR, 0, Math.PI * 2);
+        canvasCtx.fillStyle = '#0f172a';
+        canvasCtx.fill();
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = '#ffd700';
+        canvasCtx.stroke();
+
+        if (punkalasaLoaded && punkalasaImg.complete) {
+            const pSize = 22;
+            canvasCtx.drawImage(punkalasaImg, -pSize / 2, -pSize / 2, pSize, pSize);
         }
+        canvasCtx.restore();
 
         canvasCtx.restore();
+
+        return {
+            x1: gripX,
+            y1: gripY,
+            x2: tipX,
+            y2: tipY,
+            angle: angle,
+            length: bladeLength
+        };
     }
 
-    function drawBiometricFaceScan() {
-        if (!poseData || !poseData[0]) return;
-        const nose = poseData[0];
-        const nx = (1 - nose.x) * canvasElement.width;
-        const ny = nose.y * canvasElement.height;
-
+    // ==========================================
+    // RENDER: LEFT ARM AEGIS ENERGY SHIELD
+    // ==========================================
+    function drawAegisShield(lwX, lwY, leX, leY, shoulderDist) {
+        const sRadius = Math.max(34, shoulderDist * 0.22);
         canvasCtx.save();
-        // Rotating outer scanning brackets
-        const angle = (Date.now() / 900) % (Math.PI * 2);
-        canvasCtx.translate(nx, ny);
-        canvasCtx.rotate(angle);
-        canvasCtx.strokeStyle = 'rgba(0, 242, 255, 0.5)';
-        canvasCtx.lineWidth = 1.5;
-        canvasCtx.setLineDash([12, 14]);
-        canvasCtx.beginPath();
-        canvasCtx.arc(0, 0, 42, 0, Math.PI * 2);
-        canvasCtx.stroke();
-        canvasCtx.setLineDash([]);
+        canvasCtx.translate(lwX, lwY);
 
-        // Counter-rotating inner ring
-        canvasCtx.rotate(-angle * 2);
-        canvasCtx.strokeStyle = 'rgba(243, 112, 33, 0.65)';
-        canvasCtx.lineWidth = 1.5;
+        // Translucent cyber energy shield
         canvasCtx.beginPath();
-        canvasCtx.arc(0, 0, 30, 0, Math.PI * 2);
-        canvasCtx.stroke();
+        canvasCtx.arc(0, 0, sRadius, 0, Math.PI * 2);
+        canvasCtx.fillStyle = 'rgba(0, 242, 255, 0.18)';
+        canvasCtx.fill();
 
-        // Biometric HUD tag
-        canvasCtx.rotate(angle); // back to neutral orientation
-        canvasCtx.fillStyle = '#00f2ff';
-        canvasCtx.font = 'bold 8.5px "Outfit", sans-serif';
-        canvasCtx.textAlign = 'center';
-        canvasCtx.shadowBlur = 6;
+        // Glowing outer rim
+        canvasCtx.lineWidth = 3;
+        canvasCtx.strokeStyle = '#00f2ff';
+        canvasCtx.shadowBlur = 16;
         canvasCtx.shadowColor = '#00f2ff';
-        canvasCtx.fillText('BIO-ID: SECURED', 0, 56);
+        canvasCtx.stroke();
+
+        // Hexagonal energy core
+        canvasCtx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const a = (i * Math.PI) / 3;
+            const hx = Math.cos(a) * (sRadius * 0.65);
+            const hy = Math.sin(a) * (sRadius * 0.65);
+            if (i === 0) canvasCtx.moveTo(hx, hy);
+            else canvasCtx.lineTo(hx, hy);
+        }
+        canvasCtx.closePath();
+        canvasCtx.lineWidth = 1.5;
+        canvasCtx.strokeStyle = 'rgba(255, 215, 0, 0.7)';
+        canvasCtx.stroke();
+
+        canvasCtx.font = 'bold 8px "Outfit", sans-serif';
+        canvasCtx.fillStyle = '#00f2ff';
+        canvasCtx.textAlign = 'center';
+        canvasCtx.fillText('AEGIS', 0, 3);
+
         canvasCtx.restore();
+
+        return {
+            cx: lwX,
+            cy: lwY,
+            radius: sRadius
+        };
     }
 
     function drawSecurityObject(obj) {
         canvasCtx.save();
+        canvasCtx.translate(obj.x, obj.y);
+        if (obj.rotation) canvasCtx.rotate(obj.rotation);
+
         const color = obj.type === 'SAFE' ? '#00ff88' : '#ff3e3e';
         canvasCtx.fillStyle = color;
-        canvasCtx.shadowBlur = 18; canvasCtx.shadowColor = color;
+        canvasCtx.shadowBlur = 18;
+        canvasCtx.shadowColor = color;
         
         canvasCtx.beginPath();
         if (obj.type === 'SAFE') {
-            canvasCtx.arc(obj.x, obj.y, 22, 0, Math.PI * 2);
+            canvasCtx.arc(0, 0, 22, 0, Math.PI * 2);
         } else {
             if (canvasCtx.roundRect) {
-                canvasCtx.roundRect(obj.x - 18, obj.y - 18, 36, 36, 8);
+                canvasCtx.roundRect(-18, -18, 36, 36, 8);
             } else {
-                canvasCtx.rect(obj.x - 18, obj.y - 18, 36, 36);
+                canvasCtx.rect(-18, -18, 36, 36);
             }
         }
         canvasCtx.fill();
 
         canvasCtx.fillStyle = '#ffffff';
-        canvasCtx.font = 'bold 12px "Outfit", sans-serif';
+        canvasCtx.font = 'bold 11px "Outfit", sans-serif';
         canvasCtx.textAlign = 'center';
-        canvasCtx.fillText(obj.label, obj.x, obj.y + 36);
+        canvasCtx.fillText(obj.label, 0, 34);
         canvasCtx.restore();
     }
 
