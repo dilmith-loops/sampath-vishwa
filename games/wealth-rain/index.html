@@ -257,7 +257,8 @@
         const timer = setInterval(() => {
             timeLeft--;
             const formatted = `00:${timeLeft.toString().padStart(2, '0')}`;
-            document.getElementById('timerLabel').innerText = formatted;
+            const timerLabel = document.getElementById('timerLabel');
+            if (timerLabel) timerLabel.innerText = formatted;
             window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: formatted }, '*');
             if (timeLeft <= 0) {
                 clearInterval(timer);
@@ -363,8 +364,10 @@
                 score += addPoints;
                 progress = Math.min(100, progress + 2.5);
                 playPing();
-                document.getElementById('scoreLabel').innerText = `LKR ${score.toLocaleString()}`;
-                document.getElementById('progressBar').style.width = `${progress}%`;
+                const scoreLabel = document.getElementById('scoreLabel');
+                if (scoreLabel) scoreLabel.innerText = `LKR ${score.toLocaleString()}`;
+                const progressBar = document.getElementById('progressBar');
+                if (progressBar) progressBar.style.width = `${progress}%`;
                 window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: score }, '*');
                 coins.splice(i, 1);
                 return;

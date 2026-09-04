@@ -351,7 +351,8 @@
                         obj.vy = -9;
                         playSound(1200, 'sawtooth', 0.25);
                         score += 150;
-                        document.getElementById('ratingLabel').innerText = score;
+                        const ratingLabel = document.getElementById('ratingLabel');
+                        if (ratingLabel) ratingLabel.innerText = score;
                         window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: score }, '*');
                     }
                 }
@@ -367,7 +368,8 @@
                     } else {
                         score += 200;
                         playSound(950, 'sine', 0.2);
-                        document.getElementById('ratingLabel').innerText = score;
+                        const ratingLabel = document.getElementById('ratingLabel');
+                        if (ratingLabel) ratingLabel.innerText = score;
                         window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: score }, '*');
                     }
                     objects.splice(index, 1);

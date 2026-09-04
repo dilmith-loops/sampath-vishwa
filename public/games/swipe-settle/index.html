@@ -256,7 +256,8 @@
         timerInterval = setInterval(() => {
             timeLeft--;
             const formatted = `00:${timeLeft.toString().padStart(2, '0')}`;
-            document.getElementById('timerLabel').innerText = formatted;
+            const timerLabel = document.getElementById('timerLabel');
+            if (timerLabel) timerLabel.innerText = formatted;
             window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: formatted }, '*');
             if (timeLeft <= 0) endGame();
         }, 1000);
@@ -380,7 +381,8 @@
                 // Settlement Logic
                 if (bill.y > phoneY && bill.x > phoneX && bill.x < phoneX + phoneW) {
                     score += 100;
-                    document.getElementById('scoreLabel').innerText = score.toString().padStart(4, '0');
+                    const scoreLabel = document.getElementById('scoreLabel');
+                    if (scoreLabel) scoreLabel.innerText = score.toString().padStart(4, '0');
                     playSfx();
                     window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: score }, '*');
                     bills.splice(index, 1);

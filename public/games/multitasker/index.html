@@ -378,14 +378,17 @@
                     streak = 1;
                     playSfx(200, 100);
                 }
-                document.getElementById('scoreLabel').innerText = score;
-                document.getElementById('streakLabel').innerText = `Streak x${streak}`;
+                const scoreLabel = document.getElementById('scoreLabel');
+                if (scoreLabel) scoreLabel.innerText = score;
+                const streakLabel = document.getElementById('streakLabel');
+                if (streakLabel) streakLabel.innerText = `Streak x${streak}`;
                 window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: score }, '*');
                 activeBubble = null;
                 setTimeout(spawnBubble, 500);
             } else if (activeBubble.y > canvasElement.height + 100) {
                 streak = 1; 
-                document.getElementById('streakLabel').innerText = `Streak x${streak}`;
+                const streakLabel = document.getElementById('streakLabel');
+                if (streakLabel) streakLabel.innerText = `Streak x${streak}`;
                 activeBubble = null;
                 setTimeout(spawnBubble, 500);
             }
