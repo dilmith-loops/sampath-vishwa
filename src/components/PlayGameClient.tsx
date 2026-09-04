@@ -43,9 +43,11 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
     }
   };
 
+  const gameSrc = withBasePath(`/games/${game.id}/index.html`);
+
   const handleRestart = () => {
     const iframe = document.getElementById('kiosk-frame') as HTMLIFrameElement;
-    if (iframe) iframe.src = game.iframePath;
+    if (iframe) iframe.src = gameSrc;
   };
 
   return (
@@ -119,7 +121,7 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
         }}>
           <iframe
             id="kiosk-frame"
-            src={game.iframePath}
+            src={gameSrc}
             title={game.title}
             allow="camera; microphone; display-capture; autoplay"
             style={{

@@ -65,9 +65,11 @@ export default function GameTheaterModal({
 
   if (!game) return null;
 
+  const gameSrc = withBasePath(`/games/${game.id}/index.html`);
+
   const restartGame = () => {
     if (iframeRef.current) {
-      iframeRef.current.src = game.iframePath;
+      iframeRef.current.src = gameSrc;
       setCurrentScore(0);
     }
   };
@@ -229,7 +231,7 @@ export default function GameTheaterModal({
 
           <iframe
             ref={iframeRef}
-            src={game.iframePath}
+            src={gameSrc}
             title={game.title}
             allow="camera; microphone; display-capture; autoplay"
             style={{
