@@ -53,36 +53,42 @@
         .header {
             display: flex; justify-content: space-between; align-items: center;
             background: linear-gradient(180deg, rgba(5,11,24,0.94) 0%, rgba(5,11,24,0.75) 100%);
-            padding: 8px 12px; border-radius: 14px;
+            padding: 6px 10px; border-radius: 12px;
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-glass);
             pointer-events: auto; width: 100%; box-sizing: border-box;
-            gap: 8px;
+            gap: 6px;
         }
 
         .brand-pill {
-            display: flex; align-items: center; gap: 8px;
-            min-width: 0; flex-shrink: 1;
+            display: flex; align-items: center; gap: 6px;
+            min-width: 0; flex-shrink: 1; overflow: hidden;
+        }
+
+        .brand-pill > div {
+            min-width: 0; overflow: hidden;
         }
 
         .brand-icon {
-            width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+            width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0;
             box-shadow: 0 4px 12px rgba(243, 112, 33, 0.35);
         }
 
         .brand-name {
             font-family: 'Outfit', sans-serif; font-weight: 800;
-            font-size: 0.82rem; letter-spacing: 0.3px;
+            font-size: 0.8rem; letter-spacing: 0.2px;
             color: #ffffff; line-height: 1.15; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
         }
 
         .brand-tagline {
-            font-size: 0.58rem; color: var(--gold); font-weight: 700;
-            letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;
+            font-size: 0.54rem; color: var(--gold); font-weight: 700;
+            letter-spacing: 0.3px; text-transform: uppercase; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
         }
 
         .stats-group {
-            display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+            display: flex; align-items: center; gap: 6px; flex-shrink: 0;
         }
 
         .stat-box {
@@ -217,12 +223,12 @@
                     <img src="../../brand/sampath-punkalasa.png" class="brand-icon" alt="Sampath Bank">
                     <div>
                         <div class="brand-name">Sampath Vishwa</div>
-                        <div class="brand-tagline">Rain of Wealth (e-FDs)</div>
+                        <div class="brand-tagline">e-FD Wealth Rain</div>
                     </div>
                 </div>
                 <div class="stats-group">
                     <div class="stat-box">
-                        <div class="stat-label">TOTAL SAVINGS</div>
+                        <div class="stat-label">SAVINGS</div>
                         <div id="scoreLabel" class="stat-val">LKR 0</div>
                     </div>
                     <div class="timer-val" id="timerLabel">00:45</div>
