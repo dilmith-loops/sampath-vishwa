@@ -7,7 +7,6 @@ import GameCard from '@/components/GameCard';
 import GameTheaterModal from '@/components/GameTheaterModal';
 import LeaderboardModal from '@/components/LeaderboardModal';
 import HowToPlayModal from '@/components/HowToPlayModal';
-import Footer from '@/components/Footer';
 import { GAMES } from '@/data/games';
 import { GameInfo, ScoreRecord } from '@/types/game';
 import { Layers, Trophy, Camera } from 'lucide-react';
@@ -205,8 +204,6 @@ export default function HomePage() {
           }}
         />
       )}
-
-      <Footer />
     </>
   );
 }
