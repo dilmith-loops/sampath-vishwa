@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { withBasePath } from '@/utils/paths';
-import { X, RotateCcw, Maximize2, Smartphone, Monitor, Trophy } from 'lucide-react';
+import { X, RotateCcw, Maximize2, Smartphone, Monitor, Trophy, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { GameInfo } from '@/types/game';
 
@@ -14,6 +14,14 @@ interface GameTheaterModalProps {
   initialKioskAspect?: boolean;
 }
 
+const getInitialTime = (gameId?: string) => {
+  if (gameId === 'biometric-shield') return '01:00';
+  if (gameId === 'multitasker') return '00:45';
+  if (gameId === 'swipe-settle') return '00:30';
+  if (gameId === 'wealth-rain') return '00:45';
+  return '--:--';
+};
+
 export default function GameTheaterModal({
   game,
   onClose,
@@ -21,6 +29,7 @@ export default function GameTheaterModal({
   initialKioskAspect = true
 }: GameTheaterModalProps) {
   const [currentScore, setCurrentScore] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<string>(getInitialTime(game?.id));
   const [isKioskRatio, setIsKioskRatio] = useState<boolean>(initialKioskAspect);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -28,6 +37,7 @@ export default function GameTheaterModal({
 
   useEffect(() => {
     setCurrentScore(0);
+    setCurrentTime(getInitialTime(game?.id));
     setIsKioskRatio(initialKioskAspect);
   }, [game, initialKioskAspect]);
 
@@ -38,6 +48,14 @@ export default function GameTheaterModal({
 
       if (e.data.type === 'GAME_SCORE_UPDATE') {
         setCurrentScore(e.data.score || 0);
+      } else if (e.data.type === 'GAME_TIME_UPDATE') {
+        if (e.data.timeFormatted) {
+          setCurrentTime(e.data.timeFormatted);
+        } else if (typeof e.data.timeLeft === 'number') {
+          const mins = Math.floor(e.data.timeLeft / 60);
+          const secs = e.data.timeLeft % 60;
+          setCurrentTime(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+        }
       } else if (e.data.type === 'GAME_OVER') {
         const finalScore = e.data.score || 0;
         setCurrentScore(finalScore);
@@ -71,6 +89,7 @@ export default function GameTheaterModal({
     if (iframeRef.current) {
       iframeRef.current.src = gameSrc;
       setCurrentScore(0);
+      setCurrentTime(getInitialTime(game?.id));
     }
   };
 
@@ -121,29 +140,50 @@ export default function GameTheaterModal({
           </div>
         </div>
 
-        {/* Center: Live Score Sync HUD */}
+        {/* Center: Live Score & Timer Sync HUD */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: '12px',
           background: 'rgba(255, 255, 255, 0.06)',
           border: '1px solid rgba(255, 255, 255, 0.12)',
-          padding: '6px 14px',
+          padding: '6px 16px',
           borderRadius: '50px',
           boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
           flexShrink: 0
         }}>
-          <Trophy size={15} color="#d4af37" />
-          <span style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '0.5px' }}>SCORE</span>
-          <span style={{
-            fontFamily: 'Outfit, sans-serif',
-            fontSize: '1.2rem',
-            fontWeight: 900,
-            color: '#ffffff',
-            textShadow: '0 0 10px rgba(243, 112, 33, 0.5)'
-          }}>
-            {currentScore.toLocaleString()}
-          </span>
+          {/* Score */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Trophy size={15} color="#d4af37" />
+            <span style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '0.5px' }}>SCORE</span>
+            <span style={{
+              fontFamily: 'Outfit, sans-serif',
+              fontSize: '1.2rem',
+              fontWeight: 900,
+              color: '#ffffff',
+              textShadow: '0 0 10px rgba(243, 112, 33, 0.5)'
+            }}>
+              {currentScore.toLocaleString()}
+            </span>
+          </div>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '18px', background: 'rgba(255, 255, 255, 0.15)' }} />
+
+          {/* Timer */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Clock size={15} color="#00ff88" />
+            <span style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '0.5px' }}>TIME</span>
+            <span style={{
+              fontFamily: 'Outfit, sans-serif',
+              fontSize: '1.2rem',
+              fontWeight: 900,
+              color: '#00ff88',
+              letterSpacing: '0.5px'
+            }}>
+              {currentTime}
+            </span>
+          </div>
         </div>
 
         {/* Right: Actions */}

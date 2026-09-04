@@ -287,6 +287,11 @@
     let handsList = [];
     let isMuted = false;
 
+    try {
+        window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: '00:45' }, '*');
+        window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: 0 }, '*');
+    } catch(e){}
+
     let audioCtx = null;
     function getAudioContext() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -331,10 +336,13 @@
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         document.getElementById('startScreen').classList.add('hidden');
         gameActive = true;
+        window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: `00:${timeLeft.toString().padStart(2, '0')}` }, '*');
         
         const timer = setInterval(() => {
             timeLeft--;
-            document.getElementById('timerLabel').innerText = `00:${timeLeft.toString().padStart(2, '0')}`;
+            const formatted = `00:${timeLeft.toString().padStart(2, '0')}`;
+            document.getElementById('timerLabel').innerText = formatted;
+            window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: formatted }, '*');
             if (timeLeft <= 0) {
                 clearInterval(timer);
                 gameActive = false;

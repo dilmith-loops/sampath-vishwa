@@ -1,18 +1,56 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { withBasePath } from '@/utils/paths';
 import { GAMES } from '@/data/games';
-import { ArrowLeft, RotateCcw, Maximize2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Maximize2, Trophy, Clock } from 'lucide-react';
 
 interface PlayGameClientProps {
   gameId: string;
 }
 
+const getInitialTime = (gameId?: string) => {
+  if (gameId === 'biometric-shield') return '01:00';
+  if (gameId === 'multitasker') return '00:45';
+  if (gameId === 'swipe-settle') return '00:30';
+  if (gameId === 'wealth-rain') return '00:45';
+  return '--:--';
+};
+
 export default function PlayGameClient({ gameId }: PlayGameClientProps) {
   const game = GAMES.find(g => g.id === gameId);
+  const [currentScore, setCurrentScore] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<string>(getInitialTime(gameId));
+
+  useEffect(() => {
+    setCurrentScore(0);
+    setCurrentTime(getInitialTime(gameId));
+  }, [gameId]);
+
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (!e.data || typeof e.data !== 'object') return;
+
+      if (e.data.type === 'GAME_SCORE_UPDATE') {
+        setCurrentScore(e.data.score || 0);
+      } else if (e.data.type === 'GAME_TIME_UPDATE') {
+        if (e.data.timeFormatted) {
+          setCurrentTime(e.data.timeFormatted);
+        } else if (typeof e.data.timeLeft === 'number') {
+          const mins = Math.floor(e.data.timeLeft / 60);
+          const secs = e.data.timeLeft % 60;
+          setCurrentTime(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+        }
+      } else if (e.data.type === 'GAME_OVER') {
+        setCurrentScore(e.data.score || 0);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   if (!game) {
     return (
@@ -48,6 +86,8 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
   const handleRestart = () => {
     const iframe = document.getElementById('kiosk-frame') as HTMLIFrameElement;
     if (iframe) iframe.src = gameSrc;
+    setCurrentScore(0);
+    setCurrentTime(getInitialTime(gameId));
   };
 
   return (
@@ -95,6 +135,52 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
                 Sampath Vishwa AR
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Center: Live Score & Timer Sync HUD */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          background: 'rgba(255, 255, 255, 0.06)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          padding: '6px 16px',
+          borderRadius: '50px',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+          flexShrink: 0
+        }}>
+          {/* Score */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Trophy size={15} color="#d4af37" />
+            <span style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '0.5px' }}>SCORE</span>
+            <span style={{
+              fontFamily: 'Outfit, sans-serif',
+              fontSize: '1.2rem',
+              fontWeight: 900,
+              color: '#ffffff',
+              textShadow: '0 0 10px rgba(243, 112, 33, 0.5)'
+            }}>
+              {currentScore.toLocaleString()}
+            </span>
+          </div>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '18px', background: 'rgba(255, 255, 255, 0.15)' }} />
+
+          {/* Timer */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Clock size={15} color="#00ff88" />
+            <span style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '0.5px' }}>TIME</span>
+            <span style={{
+              fontFamily: 'Outfit, sans-serif',
+              fontSize: '1.2rem',
+              fontWeight: 900,
+              color: '#00ff88',
+              letterSpacing: '0.5px'
+            }}>
+              {currentTime}
+            </span>
           </div>
         </div>
 

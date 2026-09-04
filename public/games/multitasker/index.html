@@ -342,23 +342,39 @@
     });
     camera.start().catch(e => console.warn("Camera error:", e));
 
+    let timeLeft = 45;
+    let timerInterval = null;
+
+    try {
+        window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: '00:45' }, '*');
+        window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: 0 }, '*');
+    } catch(e){}
+
     function startGame() {
         getAudioContext();
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         document.getElementById('startScreen').classList.add('hidden');
         gameActive = true;
+        timeLeft = 45;
         spawnBubble();
-        setTimeout(() => {
-            gameActive = false;
-            document.getElementById('gameOverScreen').classList.remove('hidden');
-            document.getElementById('finalScore').innerText = score;
-            window.parent.postMessage({
-                type: 'GAME_OVER',
-                gameId: GAME_ID,
-                score: score,
-                title: 'The Multitasker’s Masterpiece'
-            }, '*');
-        }, 45000); 
+        window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: '00:45' }, '*');
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const formatted = `00:${timeLeft.toString().padStart(2, '0')}`;
+            window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: formatted }, '*');
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                gameActive = false;
+                document.getElementById('gameOverScreen').classList.remove('hidden');
+                document.getElementById('finalScore').innerText = score;
+                window.parent.postMessage({
+                    type: 'GAME_OVER',
+                    gameId: GAME_ID,
+                    score: score,
+                    title: 'The Multitasker’s Masterpiece'
+                }, '*');
+            }
+        }, 1000);
     }
 
     function spawnBubble() {

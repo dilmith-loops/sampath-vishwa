@@ -322,12 +322,33 @@
     });
     camera.start().catch(e => console.warn("Camera pose error:", e));
 
+    let timeLeft = 60;
+    let timerInterval = null;
+
+    try {
+        window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: '01:00' }, '*');
+        window.parent.postMessage({ type: 'GAME_SCORE_UPDATE', gameId: GAME_ID, score: 0 }, '*');
+    } catch(e){}
+
     function startGame() {
         getAudioContext();
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         document.getElementById('startScreen').classList.add('hidden');
         gameActive = true;
         playSound(700, 'sine', 0.4);
+        timeLeft = 60;
+        window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: '01:00' }, '*');
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const secs = (timeLeft % 60).toString().padStart(2, '0');
+            const formatted = `${mins}:${secs}`;
+            window.parent.postMessage({ type: 'GAME_TIME_UPDATE', gameId: GAME_ID, timeLeft: timeLeft, timeFormatted: formatted }, '*');
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                endGame();
+            }
+        }, 1000);
     }
 
     function spawnObject() {
@@ -534,6 +555,7 @@
 
     function endGame() {
         gameActive = false;
+        clearInterval(timerInterval);
         document.getElementById('gameOverScreen').classList.remove('hidden');
         document.getElementById('finalScore').innerText = score;
         window.parent.postMessage({
