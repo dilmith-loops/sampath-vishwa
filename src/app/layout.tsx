@@ -28,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <div className="bg-ambient-lights" aria-hidden="true">
           <div className="ambient-orb-1" />
           <div className="ambient-orb-2" />
