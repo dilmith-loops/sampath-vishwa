@@ -22,6 +22,16 @@ const getInitialTime = (gameId?: string) => {
   return '--:--';
 };
 
+const getTagline = (gameId?: string) => {
+  switch (gameId) {
+    case 'swipe-settle': return 'QUICKPAY SETTLE';
+    case 'multitasker': return 'HANDS-FREE HUB';
+    case 'wealth-rain': return 'e-FD WEALTH RAIN';
+    case 'biometric-shield': return 'CYBER SHIELD';
+    default: return 'QUICKPAY SETTLE';
+  }
+};
+
 export default function GameTheaterModal({
   game,
   onClose,
@@ -121,68 +131,122 @@ export default function GameTheaterModal({
     >
       {/* Top Floating Control Bar */}
       <div className="theater-hud-bar">
-        {/* Left: Brand & Game Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Image
-            src={withBasePath('/brand/sampath-punkalasa.png')}
-            alt="Sampath Logo"
-            width={32}
-            height={32}
-            style={{ borderRadius: 8, flexShrink: 0 }}
-          />
-          <div>
-            <div style={{ fontSize: 'clamp(0.9rem, 3vw, 1.1rem)', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
-              {game.title}
-            </div>
-            <div className="hide-on-mobile" style={{ fontSize: '0.72rem', color: game.accentColor, fontWeight: 700, letterSpacing: '0.5px' }}>
-              Sampath Vishwa AR
-            </div>
-          </div>
-        </div>
-
-        {/* Center: Live Score & Timer Sync HUD */}
+        {/* Exact Sampath Vishwa In-Game Header as requested */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
-          background: 'rgba(255, 255, 255, 0.06)',
+          background: 'linear-gradient(180deg, rgba(5, 11, 24, 0.94) 0%, rgba(5, 11, 24, 0.78) 100%)',
+          padding: '6px 14px',
+          borderRadius: '14px',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
           border: '1px solid rgba(255, 255, 255, 0.12)',
-          padding: '6px 16px',
-          borderRadius: '50px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-          flexShrink: 0
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.45)',
+          gap: '12px',
+          maxWidth: '100%',
+          overflow: 'hidden'
         }}>
-          {/* Score */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Trophy size={15} color="#d4af37" />
-            <span style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '0.5px' }}>SCORE</span>
-            <span style={{
-              fontFamily: 'Outfit, sans-serif',
-              fontSize: '1.2rem',
-              fontWeight: 900,
-              color: '#ffffff',
-              textShadow: '0 0 10px rgba(243, 112, 33, 0.5)'
+          {/* Brand Pill */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '7px',
+              background: '#f37021',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              boxShadow: '0 4px 12px rgba(243, 112, 33, 0.35)'
             }}>
-              {currentScore.toLocaleString()}
-            </span>
+              <Image
+                src={withBasePath('/brand/sampath-punkalasa.png')}
+                alt="Sampath Bank"
+                width={26}
+                height={26}
+                style={{ borderRadius: '5px' }}
+              />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{
+                fontFamily: 'Outfit, sans-serif',
+                fontWeight: 800,
+                fontSize: '0.88rem',
+                color: '#ffffff',
+                lineHeight: 1.15,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                Sampath Vishwa
+              </div>
+              <div style={{
+                fontSize: '0.58rem',
+                color: '#f37021',
+                fontWeight: 800,
+                letterSpacing: '0.4px',
+                textTransform: 'uppercase',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                lineHeight: 1,
+                marginTop: '2px'
+              }}>
+                {getTagline(game.id)}
+              </div>
+            </div>
           </div>
 
-          {/* Divider */}
-          <div style={{ width: '1px', height: '18px', background: 'rgba(255, 255, 255, 0.15)' }} />
+          {/* Orange Divider */}
+          <div style={{
+            width: '2px',
+            height: '28px',
+            background: '#f37021',
+            borderRadius: '2px',
+            flexShrink: 0
+          }} />
 
-          {/* Timer */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Clock size={15} color="#00ff88" />
-            <span style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '0.5px' }}>TIME</span>
-            <span style={{
-              fontFamily: 'Outfit, sans-serif',
-              fontSize: '1.2rem',
-              fontWeight: 900,
-              color: '#00ff88',
-              letterSpacing: '0.5px'
+          {/* Stats Group: Points */}
+          <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left', flexShrink: 0 }}>
+            <div style={{
+              fontSize: '0.56rem',
+              color: '#cbd5e1',
+              fontWeight: 700,
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+              lineHeight: 1,
+              marginBottom: '2px'
             }}>
-              {currentTime}
-            </span>
+              POINTS
+            </div>
+            <div style={{
+              fontFamily: 'Outfit, sans-serif',
+              fontSize: '1.35rem',
+              fontWeight: 900,
+              color: '#ffffff',
+              textShadow: '0 0 12px rgba(243, 112, 33, 0.6)',
+              lineHeight: 1
+            }}>
+              {currentScore >= 10000 ? currentScore.toLocaleString() : String(currentScore).padStart(4, '0')}
+            </div>
+          </div>
+
+          {/* Stats Group: Gold Timer Box */}
+          <div style={{
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: '1.25rem',
+            fontWeight: 800,
+            color: '#d4af37',
+            background: 'rgba(212, 175, 55, 0.12)',
+            padding: '6px 12px',
+            borderRadius: '10px',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
+            letterSpacing: '0.5px',
+            whiteSpace: 'nowrap',
+            lineHeight: 1,
+            flexShrink: 0
+          }}>
+            {currentTime}
           </div>
         </div>
 
