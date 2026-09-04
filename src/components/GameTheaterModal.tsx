@@ -116,7 +116,7 @@ export default function GameTheaterModal({
               {game.title}
             </div>
             <div className="hide-on-mobile" style={{ fontSize: '0.72rem', color: game.accentColor, fontWeight: 700, letterSpacing: '0.5px' }}>
-              Sampath Vishwa AR • {game.trackingTech}
+              Sampath Vishwa AR
             </div>
           </div>
         </div>

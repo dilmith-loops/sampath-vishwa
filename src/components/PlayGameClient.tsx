@@ -92,7 +92,7 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
                 {game.title}
               </div>
               <div className="hide-on-mobile" style={{ fontSize: '0.7rem', color: game.accentColor, fontWeight: 600 }}>
-                {game.trackingTech}
+                Sampath Vishwa AR
               </div>
             </div>
           </div>
