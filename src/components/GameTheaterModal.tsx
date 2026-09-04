@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { withBasePath } from '@/utils/paths';
 import { X, RotateCcw, Maximize2, Smartphone, Monitor, Trophy } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { GameInfo } from '@/types/game';
@@ -111,7 +112,7 @@ export default function GameTheaterModal({
         {/* Left: Brand & Game Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <Image
-            src="/brand/sampath-punkalasa.png"
+            src={withBasePath('/brand/sampath-punkalasa.png')}
             alt="Sampath Logo"
             width={36}
             height={36}

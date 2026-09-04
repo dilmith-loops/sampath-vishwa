@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
+import { withBasePath } from '@/utils/paths';
 import { Play, Shield, Zap, TrendingUp, HandMetal } from 'lucide-react';
 import { GameInfo } from '@/types/game';
 
@@ -229,7 +230,7 @@ export default function HeroSection({
                 borderRadius: '20px',
                 backdropFilter: 'blur(8px)'
               }}>
-                <Image src="/brand/sampath-punkalasa.png" width={20} height={20} alt="" />
+                <Image src={withBasePath('/brand/sampath-punkalasa.png')} width={20} height={20} alt="" />
                 <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#f37021' }}>VISHWA AR</span>
               </div>
 

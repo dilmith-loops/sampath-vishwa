@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { withBasePath } from '@/utils/paths';
 import { X, Camera, CheckCircle2, Play, Lightbulb } from 'lucide-react';
 import { GAMES } from '@/data/games';
 import { GameInfo } from '@/types/game';
@@ -61,7 +62,7 @@ export default function HowToPlayModal({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <Image
-              src="/brand/sampath-punkalasa.png"
+              src={withBasePath('/brand/sampath-punkalasa.png')}
               alt="Sampath Logo"
               width={42}
               height={42}

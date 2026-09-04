@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { withBasePath } from '@/utils/paths';
 import { Trophy, HelpCircle, Smartphone, Volume2, VolumeX, Camera, Maximize2 } from 'lucide-react';
 
 interface NavbarProps {
@@ -76,7 +77,7 @@ export default function Navbar({
             filter: 'drop-shadow(0 4px 14px rgba(243, 112, 33, 0.45))'
           }}>
             <Image
-              src="/brand/sampath-punkalasa.png"
+              src={withBasePath('/brand/sampath-punkalasa.png')}
               alt="Sampath Bank"
               width={46}
               height={46}
@@ -87,7 +88,7 @@ export default function Navbar({
 
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Image
-              src="/brand/vishwa-logo.png"
+              src={withBasePath('/brand/vishwa-logo.png')}
               alt="Sampath Vishwa Online Banking"
               width={170}
               height={52}

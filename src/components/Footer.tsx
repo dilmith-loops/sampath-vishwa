@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { withBasePath } from '@/utils/paths';
 import { Shield, ExternalLink } from 'lucide-react';
 
 export default function Footer() {
@@ -24,14 +25,14 @@ export default function Footer() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
             <Image
-              src="/brand/sampath-punkalasa.png"
+              src={withBasePath('/brand/sampath-punkalasa.png')}
               alt="Sampath Logo"
               width={40}
               height={40}
               style={{ objectFit: 'contain' }}
             />
             <Image
-              src="/brand/vishwa-logo.png"
+              src={withBasePath('/brand/vishwa-logo.png')}
               alt="Sampath Vishwa"
               width={160}
               height={46}

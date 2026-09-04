@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { withBasePath } from '@/utils/paths';
 import { GAMES } from '@/data/games';
 import { ArrowLeft, RotateCcw, Maximize2 } from 'lucide-react';
 
@@ -75,7 +76,7 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Image
-              src="/brand/sampath-punkalasa.png"
+              src={withBasePath('/brand/sampath-punkalasa.png')}
               alt="Sampath Logo"
               width={32}
               height={32}

@@ -1,5 +1,9 @@
 import { GameInfo } from '@/types/game';
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH !== undefined
+  ? process.env.NEXT_PUBLIC_BASE_PATH
+  : '/SampathVishwa';
+
 export const GAMES: GameInfo[] = [
   {
     id: 'swipe-settle',
@@ -14,7 +18,7 @@ export const GAMES: GameInfo[] = [
     gestureName: 'Index Fingertip Pinch & Drag',
     accentColor: '#f37021',
     secondaryColor: '#ff8c42',
-    iframePath: '/games/swipe-settle/index.html',
+    iframePath: `${BASE_PATH}/games/swipe-settle/index.html`,
     durationSec: 30,
     howToPlay: [
       'Raise your hand in front of the webcam until your glowing fingertip cursor appears.',
@@ -42,7 +46,7 @@ export const GAMES: GameInfo[] = [
     gestureName: 'Head Tilt Steering',
     accentColor: '#00ff88',
     secondaryColor: '#00b894',
-    iframePath: '/games/multitasker/index.html',
+    iframePath: `${BASE_PATH}/games/multitasker/index.html`,
     durationSec: 45,
     howToPlay: [
       'Center your face in the camera to activate your Sampath Vishwa AR Cyber Visor.',
@@ -71,7 +75,7 @@ export const GAMES: GameInfo[] = [
     gestureName: 'Cupped Hands Energy Bridge',
     accentColor: '#d4af37',
     secondaryColor: '#f59e0b',
-    iframePath: '/games/wealth-rain/index.html',
+    iframePath: `${BASE_PATH}/games/wealth-rain/index.html`,
     durationSec: 45,
     howToPlay: [
       'Show both palms to the camera to generate a golden laser bridge between your hands.',
@@ -99,7 +103,7 @@ export const GAMES: GameInfo[] = [
     gestureName: 'Forearm Cyber Shield',
     accentColor: '#00f2ff',
     secondaryColor: '#0077b6',
-    iframePath: '/games/biometric-shield/index.html',
+    iframePath: `${BASE_PATH}/games/biometric-shield/index.html`,
     durationSec: 60,
     howToPlay: [
       'Step back slightly so the camera tracks your upper body and arms.',
