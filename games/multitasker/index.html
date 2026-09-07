@@ -7,6 +7,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="../common/vr-joystick.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -191,6 +192,9 @@
 
 <script>
     const GAME_ID = 'multitasker';
+    if (window.VRJoystick) {
+        window.VRJoystick.init({ gameId: GAME_ID });
+    }
     const videoElement = document.getElementById('input_video');
     const canvasElement = document.getElementById('output_canvas');
     const canvasCtx = canvasElement.getContext('2d');
@@ -201,6 +205,8 @@
     let currentTilt = 0; 
     let activeBubble = null;
     let isMuted = false;
+    let latestImage = null;
+    let latestLm = null;
 
     const TASKS = [
         { label: "CEB ELECTRICITY", amt: "Rs. 4,500", goal: "RIGHT" },
@@ -239,13 +245,15 @@
     faceMesh.onResults(results => {
         if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) return;
         const lm = results.multiFaceLandmarks[0];
-        const leftEye = lm[33]; const rightEye = lm[263];
+        latestImage = results.image;
+        latestLm = lm;
         
-        // Tilt Calculation
-        const rawAngle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x) * (180 / Math.PI);
-        currentTilt = currentTilt * 0.8 + rawAngle * 0.2; // Smoother tracking
-
-        draw(results.image, lm);
+        // Tilt Calculation from camera (only when NOT in VR Joystick mode)
+        if (!window.VRJoystick || !window.VRJoystick.isJoystickMode()) {
+            const leftEye = lm[33]; const rightEye = lm[263];
+            const rawAngle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x) * (180 / Math.PI);
+            currentTilt = currentTilt * 0.8 + rawAngle * 0.2; // Smoother tracking
+        }
     });
 
     const camera = new Camera(videoElement, {
@@ -309,6 +317,20 @@
         if (canvasElement.width !== canvasElement.clientWidth || canvasElement.height !== canvasElement.clientHeight) {
             canvasElement.width = canvasElement.clientWidth;
             canvasElement.height = canvasElement.clientHeight;
+        }
+
+        // 0. Update VR Joystick Input if enabled
+        if (window.VRJoystick && window.VRJoystick.isJoystickMode()) {
+            const vrState = window.VRJoystick.update(canvasElement.width, canvasElement.height);
+            if (vrState.leftTrigger || vrState.dpadLeft) {
+                currentTilt = currentTilt * 0.7 + (-26) * 0.3;
+            } else if (vrState.rightTrigger || vrState.dpadRight) {
+                currentTilt = currentTilt * 0.7 + (26) * 0.3;
+            } else if (Math.abs(vrState.stickX) > 0.05) {
+                currentTilt = currentTilt * 0.7 + (vrState.stickX * 30) * 0.3;
+            } else {
+                currentTilt = currentTilt * 0.75;
+            }
         }
 
         canvasCtx.save();
@@ -422,7 +444,19 @@
         canvasCtx.font = '11px monospace';
         canvasCtx.fillText("VISHWA HANDS-FREE // TILT: " + Math.round(currentTilt) + "°", -width/2, -45);
         canvasCtx.restore();
+
+        // VR Joystick HUD (visible only when VR mode is ON)
+        if (window.VRJoystick) {
+            window.VRJoystick.drawHud(canvasCtx, canvasElement.width, canvasElement.height, '[STICK] Steer  •  [L-TRIG] Skip  •  [R-TRIG] Approve');
+        }
     }
+
+    // Continuous 60fps Loop
+    function gameLoop() {
+        draw(latestImage, latestLm);
+        requestAnimationFrame(gameLoop);
+    }
+    requestAnimationFrame(gameLoop);
 
     window.addEventListener('message', (e) => {
         if (!e.data) return;

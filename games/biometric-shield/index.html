@@ -7,6 +7,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="../common/vr-joystick.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -213,6 +214,9 @@
 
 <script>
     const GAME_ID = 'biometric-shield';
+    if (window.VRJoystick) {
+        window.VRJoystick.init({ gameId: GAME_ID });
+    }
     const videoElement = document.getElementById('input_video');
     const canvasElement = document.getElementById('output_canvas');
     const canvasCtx = canvasElement.getContext('2d');
@@ -223,6 +227,9 @@
     let objects = [];
     let poseData = null;
     let isMuted = false;
+    let prevVrSlash = false;
+    let vrSwordSwingProgress = 0;
+    let latestCameraImg = null;
 
     // Preload Sampath Brand Assets
     const punkalasaImg = new Image();
@@ -326,7 +333,7 @@
     
     pose.onResults(results => {
         poseData = results.poseLandmarks;
-        draw(results.image);
+        latestCameraImg = results.image;
     });
 
     const camera = new Camera(videoElement, {
@@ -466,62 +473,108 @@
         if (coreFlash > 0) coreFlash = Math.max(0, coreFlash - 0.04);
         if (threatFlash > 0) threatFlash = Math.max(0, threatFlash - 0.04);
 
-        if (!poseData) return;
+        const isVRMode = window.VRJoystick && window.VRJoystick.isJoystickMode();
+        if (!poseData && !isVRMode) return;
 
-        // 2. Body Landmarks Extraction
-        const leftShoulder = poseData[11];
-        const rightShoulder = poseData[12];
-        const sh1X = (1 - leftShoulder.x) * canvasElement.width;
-        const sh1Y = leftShoulder.y * canvasElement.height;
-        const sh2X = (1 - rightShoulder.x) * canvasElement.width;
-        const sh2Y = rightShoulder.y * canvasElement.height;
-
-        const shoulderDist = Math.max(120, Math.hypot(sh2X - sh1X, sh2Y - sh1Y));
-        const shoulderMidX = (sh1X + sh2X) / 2;
-        const shoulderMidY = (sh1Y + sh2Y) / 2;
-
-        // The Knight's Punkalasa Core position on chestplate
-        const coreX = shoulderMidX;
-        const coreY = shoulderMidY + shoulderDist * 0.28;
+        // 2. Body Landmarks Extraction / Default Avatar
+        let sh1X, sh1Y, sh2X, sh2Y, shoulderDist, shoulderMidX, shoulderMidY, coreX, coreY;
+        if (poseData) {
+            const leftShoulder = poseData[11];
+            const rightShoulder = poseData[12];
+            sh1X = (1 - leftShoulder.x) * canvasElement.width;
+            sh1Y = leftShoulder.y * canvasElement.height;
+            sh2X = (1 - rightShoulder.x) * canvasElement.width;
+            sh2Y = rightShoulder.y * canvasElement.height;
+            shoulderDist = Math.max(120, Math.hypot(sh2X - sh1X, sh2Y - sh1Y));
+            shoulderMidX = (sh1X + sh2X) / 2;
+            shoulderMidY = (sh1Y + sh2Y) / 2;
+            coreX = shoulderMidX;
+            coreY = shoulderMidY + shoulderDist * 0.28;
+        } else {
+            // Default center Knight position for VR Joystick mode
+            shoulderDist = Math.max(160, canvasElement.width * 0.28);
+            shoulderMidX = canvasElement.width / 2;
+            shoulderMidY = canvasElement.height * 0.52;
+            sh1X = shoulderMidX - shoulderDist / 2;
+            sh1Y = shoulderMidY;
+            sh2X = shoulderMidX + shoulderDist / 2;
+            sh2Y = shoulderMidY;
+            coreX = shoulderMidX;
+            coreY = shoulderMidY + shoulderDist * 0.28;
+        }
 
         // 3. Draw Knight Armor Overlay (Cuirass, Pauldrons, Punkalasa Core)
         drawKnightArmor(sh1X, sh1Y, sh2X, sh2Y, shoulderDist, shoulderMidX, shoulderMidY, coreX, coreY);
 
         // 4. Draw Knight Cyber-Helmet / Visor over head
-        const nose = poseData[0];
-        if (nose) {
-            const noseX = (1 - nose.x) * canvasElement.width;
-            const noseY = nose.y * canvasElement.height;
-            drawKnightHelmet(noseX, noseY, shoulderDist);
-        }
+        const nose = poseData ? poseData[0] : null;
+        const noseX = nose ? (1 - nose.x) * canvasElement.width : shoulderMidX;
+        const noseY = nose ? nose.y * canvasElement.height : (shoulderMidY - shoulderDist * 0.45);
+        drawKnightHelmet(noseX, noseY, shoulderDist);
 
         // 5. Draw Left Arm Aegis Energy Shield
-        const leftWrist = poseData[15];
-        const leftElbow = poseData[13];
         let aegisShield = null;
-        if (leftWrist && leftElbow) {
-            const lwX = (1 - leftWrist.x) * canvasElement.width;
-            const lwY = leftWrist.y * canvasElement.height;
-            const leX = (1 - leftElbow.x) * canvasElement.width;
-            const leY = leftElbow.y * canvasElement.height;
+        if (isVRMode) {
+            const vrState = window.VRJoystick.update(canvasElement.width, canvasElement.height);
+            const shieldStickX = vrState.controllerCount >= 2 ? vrState.leftStick.x : vrState.stickX;
+            const shieldStickY = vrState.controllerCount >= 2 ? vrState.leftStick.y : vrState.stickY;
+            const shieldOffsetX = shieldStickX * (shoulderDist * 0.95);
+            const shieldOffsetY = shieldStickY * (shoulderDist * 0.8);
+            const lwX = (coreX - shoulderDist * 0.45) + shieldOffsetX;
+            const lwY = coreY + shieldOffsetY;
+            const leX = coreX - shoulderDist * 0.65;
+            const leY = coreY + shoulderDist * 0.3;
             aegisShield = drawAegisShield(lwX, lwY, leX, leY, shoulderDist);
+        } else if (poseData) {
+            const leftWrist = poseData[15];
+            const leftElbow = poseData[13];
+            if (leftWrist && leftElbow) {
+                const lwX = (1 - leftWrist.x) * canvasElement.width;
+                const lwY = leftWrist.y * canvasElement.height;
+                const leX = (1 - leftElbow.x) * canvasElement.width;
+                const leY = leftElbow.y * canvasElement.height;
+                aegisShield = drawAegisShield(lwX, lwY, leX, leY, shoulderDist);
+            }
         }
 
-        // 6. Draw Legendary Sampath Vishwa Knight Sword (Wielded in Right Hand)
-        const rightWrist = poseData[16];
-        const rightElbow = poseData[14];
-        const rightIndex = poseData[20];
+        // 6. Draw Legendary Sampath Vishwa Knight Sword
         let swordSeg = null;
+        if (isVRMode) {
+            const vrState = window.VRJoystick.getState();
+            const isSwinging = vrState.trigger || (vrState.rightStick && vrState.rightStick.trigger);
+            if (isSwinging && !prevVrSlash) {
+                vrSwordSwingProgress = 1.0;
+                playSwordSliceSound();
+            }
+            prevVrSlash = isSwinging;
 
-        if (rightWrist && rightElbow) {
-            const rwX = (1 - rightWrist.x) * canvasElement.width;
-            const rwY = rightWrist.y * canvasElement.height;
-            const reX = (1 - rightElbow.x) * canvasElement.width;
-            const reY = rightElbow.y * canvasElement.height;
-            const riX = rightIndex ? (1 - rightIndex.x) * canvasElement.width : rwX;
-            const riY = rightIndex ? rightIndex.y * canvasElement.height : rwY;
+            if (vrSwordSwingProgress > 0) {
+                vrSwordSwingProgress = Math.max(0, vrSwordSwingProgress - 0.08);
+            }
+
+            const swordStickX = vrState.controllerCount >= 2 ? vrState.rightStick.x : vrState.stickX;
+            const swordStickY = vrState.controllerCount >= 2 ? vrState.rightStick.y : vrState.stickY;
+            const rwX = coreX + shoulderDist * 0.5 + swordStickX * 70;
+            const rwY = coreY + (vrSwordSwingProgress > 0 ? -40 : 20) + swordStickY * 50;
+            const reX = coreX + shoulderDist * 0.65;
+            const reY = coreY + shoulderDist * 0.35;
+            const riX = rwX + (vrSwordSwingProgress > 0 ? -shoulderDist * 0.9 : shoulderDist * 0.4);
+            const riY = rwY - shoulderDist * 0.85;
 
             swordSeg = drawKnightSword(rwX, rwY, reX, reY, riX, riY, shoulderDist);
+        } else if (poseData) {
+            const rightWrist = poseData[16];
+            const rightElbow = poseData[14];
+            const rightIndex = poseData[20];
+            if (rightWrist && rightElbow) {
+                const rwX = (1 - rightWrist.x) * canvasElement.width;
+                const rwY = rightWrist.y * canvasElement.height;
+                const reX = (1 - rightElbow.x) * canvasElement.width;
+                const reY = rightElbow.y * canvasElement.height;
+                const riX = rightIndex ? (1 - rightIndex.x) * canvasElement.width : rwX;
+                const riY = rightIndex ? rightIndex.y * canvasElement.height : rwY;
+                swordSeg = drawKnightSword(rwX, rwY, reX, reY, riX, riY, shoulderDist);
+            }
         }
 
         // 7. Update and Render Particles
@@ -664,7 +717,19 @@
         });
 
         prevSword = swordSeg ? { ...swordSeg } : null;
+
+        // VR Joystick HUD (visible only when VR mode is ON)
+        if (window.VRJoystick) {
+            window.VRJoystick.drawHud(canvasCtx, canvasElement.width, canvasElement.height, '[STICK] Aim Shield  •  [TRIGGER] Slash Sword');
+        }
     }
+
+    // Continuous 60fps Loop
+    function gameLoop() {
+        draw(latestCameraImg);
+        requestAnimationFrame(gameLoop);
+    }
+    requestAnimationFrame(gameLoop);
 
     // ==========================================
     // RENDER: CYBER-KNIGHT ARMOR & PUNKALASA CORE

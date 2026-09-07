@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { withBasePath } from '@/utils/paths';
 import { GAMES } from '@/data/games';
-import { ArrowLeft, RotateCcw, Maximize2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Maximize2, Gamepad2, Camera } from 'lucide-react';
 
 interface PlayGameClientProps {
   gameId: string;
@@ -34,6 +34,9 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
   const [currentScore, setCurrentScore] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<string>(getInitialTime(gameId));
   const [currentLives, setCurrentLives] = useState<number>(3);
+  const [inputMode, setInputMode] = useState<'CAMERA' | 'JOYSTICK'>('CAMERA');
+  const [gamepadConnected, setGamepadConnected] = useState<boolean>(false);
+  const [controllerCount, setControllerCount] = useState<number>(0);
 
   useEffect(() => {
     setCurrentScore(0);
@@ -61,12 +64,88 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
         }
       } else if (e.data.type === 'GAME_OVER') {
         setCurrentScore(e.data.score || 0);
+      } else if (e.data.type === 'GAME_JOYSTICK_READY') {
+        const iframe = document.getElementById('kiosk-frame') as HTMLIFrameElement;
+        iframe?.contentWindow?.postMessage({
+          type: 'SET_INPUT_MODE',
+          mode: inputMode
+        }, '*');
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [inputMode]);
+
+  // Monitor Gamepad connection & stream inputs when in JOYSTICK mode
+  useEffect(() => {
+    const checkGamepads = () => {
+      if (typeof navigator === 'undefined' || !navigator.getGamepads) return;
+      const gps = navigator.getGamepads();
+      let count = 0;
+      for (let i = 0; i < gps.length; i++) {
+        if (gps[i] && gps[i]?.connected) count++;
+      }
+      setGamepadConnected(count > 0);
+      setControllerCount(count);
+    };
+
+    checkGamepads();
+    window.addEventListener('gamepadconnected', checkGamepads);
+    window.addEventListener('gamepaddisconnected', checkGamepads);
+
+    let animId: number;
+    const pollLoop = () => {
+      if (inputMode === 'JOYSTICK' && typeof navigator !== 'undefined' && navigator.getGamepads) {
+        const gps = navigator.getGamepads();
+        let primary: Gamepad | null = null;
+        let count = 0;
+        for (let i = 0; i < gps.length; i++) {
+          if (gps[i] && gps[i]?.connected) {
+            count++;
+            if (!primary) primary = gps[i];
+          }
+        }
+        setGamepadConnected(count > 0);
+        setControllerCount(count);
+
+        if (primary) {
+          const iframe = document.getElementById('kiosk-frame') as HTMLIFrameElement;
+          const DEADZONE = 0.14;
+          const applyDeadzone = (val: number) => Math.abs(val) < DEADZONE ? 0 : (val - Math.sign(val) * DEADZONE) / (1 - DEADZONE);
+          const stickX = applyDeadzone(primary.axes[0] || 0);
+          const stickY = applyDeadzone(primary.axes[1] || 0);
+          const stick2X = applyDeadzone(primary.axes[2] || 0);
+          const stick2Y = applyDeadzone(primary.axes[3] || 0);
+          const trigger = Boolean(primary.buttons[0]?.pressed || (primary.buttons[0]?.value ?? 0) > 0.25);
+          const leftTrigger = Boolean(primary.buttons[4]?.pressed || primary.buttons[6]?.pressed);
+          const rightTrigger = Boolean(primary.buttons[5]?.pressed || primary.buttons[7]?.pressed);
+
+          iframe?.contentWindow?.postMessage({
+            type: 'VR_JOYSTICK_STATE',
+            connected: true,
+            controllerCount: count,
+            stickX,
+            stickY,
+            stick2X,
+            stick2Y,
+            trigger,
+            leftTrigger,
+            rightTrigger
+          }, '*');
+        }
+      }
+      animId = requestAnimationFrame(pollLoop);
+    };
+
+    animId = requestAnimationFrame(pollLoop);
+
+    return () => {
+      window.removeEventListener('gamepadconnected', checkGamepads);
+      window.removeEventListener('gamepaddisconnected', checkGamepads);
+      cancelAnimationFrame(animId);
+    };
+  }, [inputMode]);
 
   if (!game) {
     return (
@@ -98,6 +177,16 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
   };
 
   const gameSrc = withBasePath(`/games/${game.id}/index.html`);
+
+  const toggleInputMode = () => {
+    const nextMode = inputMode === 'CAMERA' ? 'JOYSTICK' : 'CAMERA';
+    setInputMode(nextMode);
+    const iframe = document.getElementById('kiosk-frame') as HTMLIFrameElement;
+    iframe?.contentWindow?.postMessage({
+      type: 'SET_INPUT_MODE',
+      mode: nextMode
+    }, '*');
+  };
 
   const handleRestart = () => {
     const iframe = document.getElementById('kiosk-frame') as HTMLIFrameElement;
@@ -308,6 +397,41 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
 
         {/* Right: Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          {/* Mode Switcher Button */}
+          <button
+            onClick={toggleInputMode}
+            className="btn-secondary"
+            style={{
+              padding: '7px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '7px',
+              background: inputMode === 'JOYSTICK' ? 'rgba(0, 242, 255, 0.12)' : 'rgba(255, 255, 255, 0.05)',
+              border: inputMode === 'JOYSTICK' ? '1px solid #00f2ff' : '1px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: inputMode === 'JOYSTICK' ? '0 0 16px rgba(0, 242, 255, 0.35)' : 'none',
+              color: inputMode === 'JOYSTICK' ? '#00f2ff' : '#cbd5e1',
+              cursor: 'pointer',
+              transition: 'all 0.25s ease'
+            }}
+            title={inputMode === 'JOYSTICK' ? 'VR Joystick Mode Active - Click for Camera Mode' : 'AR Camera Tracking Active - Click for VR Joystick Mode'}
+          >
+            {inputMode === 'JOYSTICK' ? <Gamepad2 size={16} /> : <Camera size={16} />}
+            <span style={{ fontSize: '0.78rem', fontWeight: 800, letterSpacing: '0.3px' }}>
+              {inputMode === 'JOYSTICK' ? 'VR Joystick' : 'AR Camera'}
+            </span>
+            <div
+              style={{
+                width: '7px',
+                height: '7px',
+                borderRadius: '50%',
+                background: inputMode === 'JOYSTICK' ? (gamepadConnected ? '#00ff88' : '#f37021') : '#00ff88',
+                boxShadow: inputMode === 'JOYSTICK' ? (gamepadConnected ? '0 0 8px #00ff88' : '0 0 8px #f37021') : '0 0 8px #00ff88',
+                transition: 'all 0.3s ease'
+              }}
+              title={inputMode === 'JOYSTICK' ? (gamepadConnected ? `${controllerCount} Controller(s) Ready` : 'Waiting for controller button press') : 'Camera Active'}
+            />
+          </button>
+
           <button onClick={handleRestart} className="btn-secondary" style={{ padding: '8px 12px' }} title="Restart">
             <RotateCcw size={15} />
             <span className="hide-on-mobile" style={{ fontSize: '0.78rem' }}>Restart</span>

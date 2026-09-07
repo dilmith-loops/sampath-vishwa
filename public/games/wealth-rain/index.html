@@ -7,6 +7,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="../common/vr-joystick.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -191,6 +192,9 @@
 
 <script>
     const GAME_ID = 'wealth-rain';
+    if (window.VRJoystick) {
+        window.VRJoystick.init({ gameId: GAME_ID });
+    }
     const video = document.getElementById('webcam_in');
     const canvas = document.getElementById('game_canvas');
     const ctx = canvas.getContext('2d');
@@ -202,6 +206,13 @@
     let progress = 0;
     let handsList = [];
     let isMuted = false;
+    let latestVideoImg = null;
+
+    // VR Joystick Bridge State
+    let vrBridgePos = { x: 0, y: 0 };
+    let vrBridgeAngle = 0;
+    let vrLeftAnchor = { x: 0, y: 0 };
+    let vrRightAnchor = { x: 0, y: 0 };
 
     // Preload Sampath Brand Assets
     const basketImg = new Image();
@@ -253,7 +264,7 @@
     
     hands.onResults(results => {
         handsList = results.multiHandLandmarks || [];
-        drawFrame(results.image);
+        latestVideoImg = results.image;
     });
 
     const camera = new Camera(video, {
@@ -325,9 +336,88 @@
         }
         ctx.restore();
 
-        // 2. Interaction Bridge (Both Hands)
+        // 2. Interaction Bridge (Both Hands or VR Joystick)
         let bridge = null;
-        if (handsList.length === 2) {
+
+        if (window.VRJoystick && window.VRJoystick.isJoystickMode()) {
+            const vrState = window.VRJoystick.update(canvas.width, canvas.height);
+
+            // Initialize default bridge positions if not set
+            if (!vrBridgePos.x) {
+                vrBridgePos.x = canvas.width / 2;
+                vrBridgePos.y = canvas.height * 0.56;
+                vrLeftAnchor.x = canvas.width / 2 - 130;
+                vrLeftAnchor.y = canvas.height * 0.56;
+                vrRightAnchor.x = canvas.width / 2 + 130;
+                vrRightAnchor.y = canvas.height * 0.56;
+            }
+
+            if (vrState.controllerCount >= 2) {
+                // Dual VR Controllers: left stick controls left anchor, right stick controls right anchor
+                vrLeftAnchor.x = Math.max(30, Math.min(canvas.width - 30, vrLeftAnchor.x + vrState.leftStick.x * 16));
+                vrLeftAnchor.y = Math.max(100, Math.min(canvas.height - 130, vrLeftAnchor.y + vrState.leftStick.y * 16));
+                vrRightAnchor.x = Math.max(30, Math.min(canvas.width - 30, vrRightAnchor.x + vrState.rightStick.x * 16));
+                vrRightAnchor.y = Math.max(100, Math.min(canvas.height - 130, vrRightAnchor.y + vrState.rightStick.y * 16));
+                bridge = {
+                    x1: vrLeftAnchor.x,
+                    y1: vrLeftAnchor.y,
+                    x2: vrRightAnchor.x,
+                    y2: vrRightAnchor.y
+                };
+            } else {
+                // Single VR Joystick: stick moves bridge center & height, stick angle or bumpers tilt it
+                vrBridgePos.x = Math.max(120, Math.min(canvas.width - 120, vrBridgePos.x + vrState.stickX * 16));
+                vrBridgePos.y = Math.max(120, Math.min(canvas.height - 140, vrBridgePos.y + vrState.stickY * 16));
+
+                let targetTilt = 0;
+                if (Math.abs(vrState.stick2X) > 0.1) {
+                    targetTilt = vrState.stick2X * 0.45;
+                } else if (vrState.leftTrigger) {
+                    targetTilt = -0.38;
+                } else if (vrState.rightTrigger) {
+                    targetTilt = 0.38;
+                } else if (Math.abs(vrState.stickX) > 0.15) {
+                    targetTilt = vrState.stickX * 0.28;
+                }
+                vrBridgeAngle = vrBridgeAngle * 0.82 + targetTilt * 0.18;
+
+                const span = 135;
+                bridge = {
+                    x1: vrBridgePos.x - Math.cos(vrBridgeAngle) * span,
+                    y1: vrBridgePos.y - Math.sin(vrBridgeAngle) * span,
+                    x2: vrBridgePos.x + Math.cos(vrBridgeAngle) * span,
+                    y2: vrBridgePos.y + Math.sin(vrBridgeAngle) * span
+                };
+            }
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 14;
+            ctx.lineCap = 'round';
+            ctx.shadowBlur = 28;
+            ctx.shadowColor = 'rgba(212, 175, 55, 0.9)';
+            ctx.moveTo(bridge.x1, bridge.y1);
+            ctx.lineTo(bridge.x2, bridge.y2);
+            ctx.stroke();
+
+            // Inner laser core
+            ctx.beginPath();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 5;
+            ctx.moveTo(bridge.x1, bridge.y1);
+            ctx.lineTo(bridge.x2, bridge.y2);
+            ctx.stroke();
+
+            // End nodes
+            ctx.fillStyle = '#f37021';
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#f37021';
+            ctx.beginPath(); ctx.arc(bridge.x1, bridge.y1, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(bridge.x2, bridge.y2, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+
+        } else if (handsList.length === 2) {
             const h1 = handsList[0][9]; // Palm center
             const h2 = handsList[1][9];
             
@@ -523,8 +613,20 @@
             ctx.restore();
         }
 
+        // VR Joystick HUD (visible only when VR mode is ON)
+        if (window.VRJoystick) {
+            window.VRJoystick.drawHud(ctx, canvas.width, canvas.height, '[STICK] Move Golden Bridge  •  [TILT] Funnel Coins');
+        }
+
         ctx.restore();
     }
+
+    // Continuous 60fps Loop
+    function gameLoop() {
+        drawFrame(latestVideoImg);
+        requestAnimationFrame(gameLoop);
+    }
+    requestAnimationFrame(gameLoop);
 
     function distToSegment(px, py, x1, y1, x2, y2) {
         const l2 = Math.hypot(x1 - x2, y1 - y2) ** 2;
