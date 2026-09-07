@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { withBasePath } from '@/utils/paths';
-import { X, RotateCcw, Maximize2, Smartphone, Monitor, Trophy, Clock } from 'lucide-react';
+import { X, RotateCcw, Maximize2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { GameInfo } from '@/types/game';
 
@@ -36,12 +36,12 @@ export default function GameTheaterModal({
   game,
   onClose,
   onRecordScore,
-  initialKioskAspect = true
+  initialKioskAspect = false
 }: GameTheaterModalProps) {
   const [currentScore, setCurrentScore] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<string>(getInitialTime(game?.id));
   const [currentLives, setCurrentLives] = useState<number>(3);
-  const [isKioskRatio, setIsKioskRatio] = useState<boolean>(initialKioskAspect);
+  const [isKioskRatio, setIsKioskRatio] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -50,7 +50,7 @@ export default function GameTheaterModal({
     setCurrentScore(0);
     setCurrentTime(getInitialTime(game?.id));
     setCurrentLives(3);
-    setIsKioskRatio(initialKioskAspect);
+    setIsKioskRatio(false);
   }, [game, initialKioskAspect]);
 
   // Listen to postMessage from game iframe
@@ -308,7 +308,8 @@ export default function GameTheaterModal({
 
         {/* Right: Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-          {/* Ratio Toggle (Hidden on mobile) */}
+          {/* Ratio Toggle (Hidden for now - wide screen only) */}
+          {/*
           <button
             id="theater-toggle-ratio"
             onClick={() => setIsKioskRatio(!isKioskRatio)}
@@ -316,9 +317,9 @@ export default function GameTheaterModal({
             title={isKioskRatio ? 'Switch to Wide Display' : 'Switch to 9:16 Kiosk Ratio'}
             style={{ padding: '8px 12px' }}
           >
-            {isKioskRatio ? <Monitor size={15} /> : <Smartphone size={15} />}
             <span style={{ fontSize: '0.76rem' }}>{isKioskRatio ? '9:16 Kiosk' : 'Wide View'}</span>
           </button>
+          */}
 
           {/* Restart */}
           <button

@@ -443,15 +443,15 @@ export default function PlayGameClient({ gameId }: PlayGameClientProps) {
         </div>
       </header>
 
-      {/* Main Kiosk Viewport */}
-      <main className="theater-stage-container">
+      {/* Main Viewport */}
+      <main className="theater-stage-container" style={{ padding: '0 14px 16px 14px' }}>
         <div className="theater-frame" style={{
           width: '100%',
           height: '100%',
           maxHeight: '100%',
-          maxWidth: 'calc((100vh - 100px) * 9 / 16)',
-          aspectRatio: '9 / 16',
-          borderRadius: '20px',
+          maxWidth: '1400px',
+          aspectRatio: 'auto',
+          borderRadius: '16px',
         }}>
           <iframe
             id="kiosk-frame"

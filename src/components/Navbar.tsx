@@ -3,19 +3,19 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { withBasePath } from '@/utils/paths';
-import { Trophy, HelpCircle, Smartphone, Volume2, VolumeX, Maximize2 } from 'lucide-react';
+import { Trophy, HelpCircle, Volume2, VolumeX, Maximize2 } from 'lucide-react';
 
 interface NavbarProps {
   onOpenLeaderboard: () => void;
   onOpenHowToPlay: () => void;
-  isKioskAspect: boolean;
-  onToggleKioskAspect: () => void;
+  isKioskAspect?: boolean;
+  onToggleKioskAspect?: () => void;
 }
 
 export default function Navbar({
   onOpenLeaderboard,
   onOpenHowToPlay,
-  isKioskAspect,
+  isKioskAspect = false,
   onToggleKioskAspect
 }: NavbarProps) {
   const [isSoundMuted, setIsSoundMuted] = useState(false);
@@ -78,7 +78,8 @@ export default function Navbar({
 
       {/* Right Controls & Nav actions */}
       <div className="nav-controls">
-        {/* Kiosk Mode Ratio Toggle (Desktop only: phone is naturally portrait) */}
+        {/* Kiosk Mode Ratio Toggle (Hidden for now - wide screen only) */}
+        {/*
         <button
           id="btn-toggle-kiosk-view"
           onClick={onToggleKioskAspect}
@@ -90,11 +91,11 @@ export default function Navbar({
             padding: '8px 14px'
           }}
         >
-          <Smartphone size={16} />
           <span style={{ fontSize: '0.82rem' }}>
             {isKioskAspect ? 'Kiosk 9:16 Active' : 'Kiosk View'}
           </span>
         </button>
+        */}
 
         {/* Fullscreen Kiosk (Desktop only) */}
         <button

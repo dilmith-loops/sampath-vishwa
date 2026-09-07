@@ -21,7 +21,7 @@ export default function HomePage() {
   const [selectedGameForPlay, setSelectedGameForPlay] = useState<GameInfo | null>(null);
   const [selectedGameForHelp, setSelectedGameForHelp] = useState<GameInfo | null>(null);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState<boolean>(false);
-  const [isKioskAspect, setIsKioskAspect] = useState<boolean>(true);
+  const [isKioskAspect, setIsKioskAspect] = useState<boolean>(false);
   const [scores, setScores] = useState<ScoreRecord[]>([]);
 
   // Load scores from localStorage
